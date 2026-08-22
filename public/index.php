@@ -69,15 +69,16 @@ function musicRelease(string $barcode): array {
     $mediumFormat=(string)($full['media'][0]['format']??''); $format=str_contains(strtolower($mediumFormat),'vinyl')?'LP':'CD';
     return ['id'=>$full['id']??$release['id'],'artist'=>$artist,'title'=>$title,'format'=>$format,'tracklist'=>implode("\n",$tracks)];
 }
-function downloadCover(string $releaseId): ?string {
+function downloadCover(string $releaseId, ?string &$error=null): ?string {
+    $error=null;
     if (!preg_match('/^[a-f0-9-]{36}$/i',$releaseId)) return null;
     $curl=curl_init('https://coverartarchive.org/release/'.rawurlencode($releaseId).'/front-500');
     curl_setopt_array($curl,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'MijnMuziekCollectie/1.0']);
     $image=curl_exec($curl);$status=(int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);$type=(string)curl_getinfo($curl,CURLINFO_CONTENT_TYPE);curl_close($curl);
     if (!is_string($image)||$status!==200||strlen($image)<1000) return null;
     $mime=explode(';',$type)[0];$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'][$mime]??null;if(!$ext)return null;
-    $dir=UPLOADS.'/covers';if(!is_dir($dir))mkdir($dir,0750,true);$name='covers/'.bin2hex(random_bytes(20)).'.'.$ext;
-    return file_put_contents(UPLOADS.'/'.$name,$image,LOCK_EX)!==false?$name:null;
+    $dir=UPLOADS.'/covers';if(!is_dir($dir) && !mkdir($dir,0750,true) && !is_dir($dir)){$error='De hoes kon niet lokaal worden opgeslagen: de opslagmap is niet schrijfbaar.';return null;}$name='covers/'.bin2hex(random_bytes(20)).'.'.$ext;
+    if(file_put_contents(UPLOADS.'/'.$name,$image,LOCK_EX)===false){$error='De hoes kon niet lokaal worden opgeslagen. Controleer schrijfrechten op storage/uploads/covers.';return null;}return $name;
 }
 function layout(string $title, string $content): never {
     $flash=$_SESSION['flash'] ?? null; unset($_SESSION['flash']); $logged=loggedIn(); $page=$_GET['page'] ?? 'dashboard';
@@ -106,7 +107,7 @@ if (($_GET['action'] ?? '') === 'lookup') { requireLogin(); header('Content-Type
     echo json_encode(['release'=>['title'=>$full['title']??'', 'artist'=>$full['artist-credit'][0]['name']??'', 'format'=>$mediumFormat, 'collectionFormat'=>$collectionFormat, 'tracks'=>implode("\n",$tracks)]]); exit;
 }
 if (($_GET['action'] ?? '') === 'check') { requireLogin(); header('Content-Type: application/json'); $s=db()->prepare('SELECT artist,title,format FROM records WHERE barcode=? AND user_id=? AND deleted_at IS NULL LIMIT 1'); $s->execute([$_GET['barcode']??'',$_SESSION['user_id']]); $r=$s->fetch(); echo json_encode($r?['found'=>true]+$r:['found'=>false]); exit; }
-if (($_GET['action'] ?? '') === 'add-from-barcode') { requireLogin(); header('Content-Type: application/json'); checkCsrf(); try { $barcode=preg_replace('/[^0-9A-Za-z]/','',$_POST['barcode']??''); if (strlen($barcode)<8) throw new RuntimeException('Ongeldige barcode.'); $existing=db()->prepare('SELECT id FROM records WHERE barcode=? AND user_id=? AND deleted_at IS NULL'); $existing->execute([$barcode,$_SESSION['user_id']]); if ($existing->fetch()) throw new RuntimeException('Deze uitgave staat al in je collectie.'); $release=musicRelease($barcode); $photo=$_POST['scan_photo']??''; if (!preg_match('#^scans/[a-f0-9]{40}\.(jpg|png|webp)$#',$photo) || !is_file(UPLOADS.'/'.$photo)) $photo=null; $cover=downloadCover($release['id']); db()->prepare('INSERT INTO records(artist,title,format,barcode,tracklist,cover_path,barcode_path,user_id) VALUES(?,?,?,?,?,?,?,?)')->execute([$release['artist'],$release['title'],$release['format'],$barcode,$release['tracklist'],$cover,$photo,$_SESSION['user_id']]); echo json_encode($release); } catch(Throwable $e) { http_response_code(422); echo json_encode(['error'=>$e->getMessage()]); } exit; }
+if (($_GET['action'] ?? '') === 'add-from-barcode') { requireLogin(); header('Content-Type: application/json'); checkCsrf(); try { $barcode=preg_replace('/[^0-9A-Za-z]/','',$_POST['barcode']??''); if (strlen($barcode)<8) throw new RuntimeException('Ongeldige barcode.'); $existing=db()->prepare('SELECT id FROM records WHERE barcode=? AND user_id=? AND deleted_at IS NULL'); $existing->execute([$barcode,$_SESSION['user_id']]); if ($existing->fetch()) throw new RuntimeException('Deze uitgave staat al in je collectie.'); $release=musicRelease($barcode); $photo=$_POST['scan_photo']??''; if (!preg_match('#^scans/[a-f0-9]{40}\.(jpg|png|webp)$#',$photo) || !is_file(UPLOADS.'/'.$photo)) $photo=null; $coverError=null;$cover=downloadCover($release['id'],$coverError); db()->prepare('INSERT INTO records(artist,title,format,barcode,tracklist,cover_path,barcode_path,user_id) VALUES(?,?,?,?,?,?,?,?)')->execute([$release['artist'],$release['title'],$release['format'],$barcode,$release['tracklist'],$cover,$photo,$_SESSION['user_id']]); echo json_encode($release+['cover_warning'=>$coverError]); } catch(Throwable $e) { http_response_code(422); echo json_encode(['error'=>$e->getMessage()]); } exit; }
 
 $count=(int)db()->query('SELECT COUNT(*) FROM users')->fetchColumn();
 if ($_SERVER['REQUEST_METHOD']==='POST') {
