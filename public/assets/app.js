@@ -1,0 +1,66 @@
+const $ = (s) => document.querySelector(s);
+
+async function lookupBarcode() {
+  const barcode = $('#barcode').value.trim();
+  const status = $('#lookup-status');
+  if (!barcode) { status.textContent = 'Vul eerst een barcode in.'; return; }
+  status.textContent = 'Zoeken in MusicBrainz…';
+  try {
+    const response = await fetch(`?action=lookup&barcode=${encodeURIComponent(barcode)}`, {headers:{Accept:'application/json'}});
+    const data = await response.json();
+    if (!response.ok || !data.release) throw new Error(data.error || 'Geen uitgave gevonden');
+    const r = data.release;
+    if (r.title) $('#title').value = r.title;
+    if (r.artist) $('#artist').value = r.artist;
+    if (r.collectionFormat) $('#format').value = r.collectionFormat;
+    if (r.tracks) $('#tracklist').value = r.tracks;
+    status.textContent = `Voorstel ingevuld${r.collectionFormat ? `; type automatisch ingesteld op ${r.collectionFormat}.` : '.'} Controleer en pas aan waar nodig.`;
+  } catch (e) { status.textContent = e.message; }
+}
+
+async function scanBarcode() {
+  const status = $('#scan-status'), video = $('#scanner-video');
+  if (!navigator.mediaDevices?.getUserMedia) { status.textContent = 'Deze browser ondersteunt camera-scanning niet. Vul de barcode handmatig in.'; return; }
+  if (!('BarcodeDetector' in window)) return scanBarcodeFallback();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+    video.srcObject=stream; video.hidden=false; await video.play();
+    const detector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});
+    status.textContent='Richt de camera op de barcode…';
+    const scan = async () => {
+      const found=await detector.detect(video);
+      if(found[0]) { const value=found[0].rawValue; stream.getTracks().forEach(t=>t.stop()); video.hidden=true; status.innerHTML=`Barcode <strong>${value}</strong> gescand.`; const target=$('#barcode'); if(target){target.value=value; lookupBarcode();} else checkOwned(value); return; }
+      requestAnimationFrame(scan);
+    }; scan();
+  } catch(e) { status.textContent='Camera kon niet worden geopend. Geef cameratoestemming en gebruik HTTPS.'; }
+}
+async function scanBarcodeFallback() {
+  const status=$('#scan-status'), box=$('#scanner-fallback');
+  try {
+    status.textContent='Camera-scanner laden…'; box.hidden=false;
+    const {Html5Qrcode}=window;if(!Html5Qrcode)throw new Error('Scanner niet geladen');
+    const scanner=new Html5Qrcode('scanner-fallback');
+    await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:150}},async value=>{
+      await scanner.stop();box.hidden=true; status.innerHTML=`Barcode <strong>${value}</strong> gescand.`;
+      const target=$('#barcode'); if(target){target.value=value;lookupBarcode();}else checkOwned(value);
+    });
+    status.textContent='Richt de camera op de barcode…';
+  } catch(e) { box.hidden=true; status.textContent='Camera-scanner kon niet starten. Geef cameratoestemming en gebruik HTTPS.'; }
+}
+async function checkOwned(barcode) { const r=await fetch(`?action=check&barcode=${encodeURIComponent(barcode)}`); const d=await r.json(); $('#scan-result').innerHTML=d.found?`✅ Je hebt deze: <strong>${d.artist} — ${d.title}</strong> (${d.format}).`:'❌ Deze barcode staat nog niet in je collectie.'; }
+async function readText(source, target, mode) {
+  const file=$(source)?.files?.[0], status=$('#ocr-status');
+  if(!file){status.textContent='Kies of maak eerst de bijbehorende foto.';return;}
+  status.textContent='Tekst wordt lokaal in je browser gelezen…';
+  try {
+    const {createWorker}=await import('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js');
+    const worker=await createWorker('eng+nld');
+    const {data:{text}}=await worker.recognize(file);
+    await worker.terminate();
+    const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(x=>x.length>1);
+    if(mode==='cover') { if(!$('#artist').value) $('#artist').value=lines[0]||''; if(!$('#title').value) $('#title').value=lines.slice(1,3).join(' ')||''; }
+    else $(target).value=lines.join('\n');
+    status.textContent='Tekstvoorstel ingevuld — controleer het zorgvuldig voor je opslaat.';
+  } catch(e) { status.textContent='Tekstherkenning is niet gelukt; vul de gegevens handmatig in.'; }
+}
+document.addEventListener('DOMContentLoaded',()=>{ $('#lookup')?.addEventListener('click',lookupBarcode); $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover')); $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back')); $('#filter')?.addEventListener('input',e=>document.querySelectorAll('.record').forEach(x=>x.hidden=!x.dataset.search.includes(e.target.value.toLowerCase()))); });

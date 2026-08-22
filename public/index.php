@@ -1,0 +1,101 @@
+<?php
+declare(strict_types=1);
+
+const ROOT = __DIR__ . '/..';
+const STORE = ROOT . '/storage';
+const UPLOADS = STORE . '/uploads';
+if (!is_dir(UPLOADS)) mkdir(UPLOADS, 0750, true);
+ini_set('session.use_strict_mode', '1');
+session_name('music_collection');
+session_set_cookie_params(['lifetime'=>0, 'path'=>'/', 'secure'=>(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'), 'httponly'=>true, 'samesite'=>'Lax']);
+session_start();
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: no-referrer');
+header('Permissions-Policy: camera=(self), microphone=()');
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src blob: https://cdn.jsdelivr.net");
+
+function db(): PDO {
+    static $db;
+    if ($db) return $db;
+    $db = new PDO('sqlite:' . STORE . '/music.sqlite', null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+    $db->exec('PRAGMA foreign_keys = ON');
+    $db->exec('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, password TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+    $db->exec('CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY, artist TEXT NOT NULL, title TEXT NOT NULL, format TEXT NOT NULL CHECK(format IN ("CD","LP")), barcode TEXT, tracklist TEXT, cover_path TEXT, back_path TEXT, barcode_path TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, user_id INTEGER NOT NULL REFERENCES users(id))');
+    $db->exec('CREATE INDEX IF NOT EXISTS records_barcode ON records(barcode)');
+    return $db;
+}
+function e(?string $value): string { return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+function loggedIn(): bool { return isset($_SESSION['user_id']); }
+function requireLogin(): void { if (!loggedIn()) { header('Location: ?page=login'); exit; } }
+function csrf(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(32)); return $_SESSION['csrf']; }
+function checkCsrf(): void { if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) { http_response_code(403); exit('Ongeldig formulierverzoek. Vernieuw de pagina en probeer opnieuw.'); } }
+function flash(string $message, string $type='ok'): void { $_SESSION['flash']=[$message,$type]; }
+function redirect(string $url): void { header('Location: '.$url); exit; }
+function imageUpload(string $key): ?string {
+    if (empty($_FILES[$key]['tmp_name']) || $_FILES[$key]['error'] === UPLOAD_ERR_NO_FILE) return null;
+    if ($_FILES[$key]['error'] !== UPLOAD_ERR_OK || $_FILES[$key]['size'] > 10 * 1024 * 1024) throw new RuntimeException('Elke foto moet kleiner zijn dan 10 MB.');
+    $mime=(new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$key]['tmp_name']);
+    $extensions=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'];
+    if (!isset($extensions[$mime])) throw new RuntimeException('Gebruik een JPG, PNG of WebP-afbeelding.');
+    $name=bin2hex(random_bytes(20)).'.'.$extensions[$mime];
+    if (!move_uploaded_file($_FILES[$key]['tmp_name'], UPLOADS.'/'.$name)) throw new RuntimeException('Foto kon niet veilig opgeslagen worden.');
+    return $name;
+}
+function outputCoverForBarcode(string $barcode): never {
+    $safe=preg_replace('/[^0-9A-Za-z]/','',$barcode);
+    $context=stream_context_create(['http'=>['header'=>"User-Agent: MijnMuziekCollectie/1.0 (personal collection app)\r\nAccept: application/json\r\n",'timeout'=>8,'follow_location'=>1]]);
+    $raw=@file_get_contents('https://musicbrainz.org/ws/2/release?query=barcode:'.rawurlencode($safe).'&fmt=json&limit=1',false,$context);
+    $data=$raw?json_decode($raw,true):null; $id=$data['releases'][0]['id']??'';
+    if (!preg_match('/^[a-f0-9-]{36}$/i',$id)) { http_response_code(404); exit; }
+    $url='https://coverartarchive.org/release/'.rawurlencode($id).'/front-250';
+    $image=@file_get_contents($url,false,$context);
+    if ($image===false) { http_response_code(404); exit; }
+    foreach ($http_response_header ?? [] as $header) if (stripos($header,'Content-Type:')===0) { header($header); break; }
+    header('Cache-Control: private, max-age=604800'); echo $image; exit;
+}
+function layout(string $title, string $content): never {
+    $flash=$_SESSION['flash'] ?? null; unset($_SESSION['flash']); $logged=loggedIn(); $page=$_GET['page'] ?? 'dashboard';
+    $nav=$logged ? '<nav><a class="'.($page==='dashboard'?'active':'').'" href="?page=dashboard">Collectie</a><a class="'.($page==='add'?'active':'').'" href="?page=add">Toevoegen</a><a class="'.($page==='scan'?'active':'').'" href="?page=scan">Scannen</a><a href="?action=logout">Uitloggen</a></nav>' : '';
+    $nav=str_replace('</nav>','<a id="update-button" class="update-link" href="?page=updates">Updates</a></nav>',$nav);
+    $content.='<link rel="stylesheet" href="assets/collection-list.css"><script src="assets/html5-qrcode.min.js"></script><script src="assets/update.js" defer></script><script src="assets/barcode-photo.js" defer></script><script src="assets/direct-scanner.js" defer></script><script src="assets/add-live-barcode.js" defer></script><script src="assets/rear-camera-capture.js" defer></script>';
+    $notice=$flash ? '<div class="notice '.($flash[1]==='error'?'error':'').'">'.e($flash[0]).'</div>' : '';
+    echo '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#e8466d"><title>'.e($title).' · Mijn Muziek</title><link rel="stylesheet" href="assets/app.css"></head><body><main class="shell"><header class="topbar"><a class="brand" href="?page=dashboard">mijn<span>muziek</span></a>'.$nav.'</header>'.$notice.$content.'</main><script src="assets/app.js" defer></script></body></html>'; exit;
+}
+
+if (($_GET['action'] ?? '') === 'logout') { session_unset(); session_destroy(); redirect('?page=login'); }
+if (($_GET['action'] ?? '') === 'image') { requireLogin(); $id=(int)($_GET['id']??0); $field=($_GET['kind']??'')==='back'?'back_path':(($_GET['kind']??'')==='barcode'?'barcode_path':'cover_path'); $s=db()->prepare("SELECT $field,barcode FROM records WHERE id=? AND user_id=?"); $s->execute([$id,$_SESSION['user_id']]); $row=$s->fetch(); $name=$row[$field]??null; $path=$name ? UPLOADS.'/'.$name : ''; if (!$name || !is_file($path)) { if ($field==='cover_path' && !empty($row['barcode'])) outputCoverForBarcode($row['barcode']); http_response_code(404); exit; } $mime=(new finfo(FILEINFO_MIME_TYPE))->file($path); header('Content-Type: '.$mime); header('X-Content-Type-Options: nosniff'); header('Cache-Control: private, max-age=86400'); readfile($path); exit; }
+if (($_GET['action'] ?? '') === 'update-status') { requireLogin(); header('Content-Type: application/json'); $local=json_decode((string)@file_get_contents(ROOT.'/version.json'),true); $current=$local['version']??'0.0.0'; $url='https://raw.githubusercontent.com/gitreprtc/mymusiccollection/main/version.json'; $context=stream_context_create(['http'=>['header'=>"User-Agent: MijnMuziekCollectie/1.0\r\n",'timeout'=>5]]); $remote=json_decode((string)@file_get_contents($url,false,$context),true); if (!is_array($remote) || empty($remote['version'])) { http_response_code(503); echo json_encode(['error'=>'GitHub-versie is niet bereikbaar.']); exit; } echo json_encode(['current'=>$current,'version'=>$remote['version'],'available'=>version_compare($remote['version'],$current,'>'),'url'=>'https://github.com/gitreprtc/mymusiccollection']); exit; }
+if (($_GET['action'] ?? '') === 'lookup') { requireLogin(); header('Content-Type: application/json'); $barcode=preg_replace('/[^0-9A-Za-z]/','',$_GET['barcode']??''); if (strlen($barcode)<6) { http_response_code(422); echo json_encode(['error'=>'Ongeldige barcode.']); exit; }
+    $url='https://musicbrainz.org/ws/2/release?query=barcode:'.rawurlencode($barcode).'&fmt=json&limit=1';
+    $context=stream_context_create(['http'=>['header'=>"User-Agent: MijnMuziekCollectie/1.0 (personal collection app)\r\nAccept: application/json\r\n",'timeout'=>8]]);
+    $raw=@file_get_contents($url,false,$context); $data=$raw?json_decode($raw,true):null; $release=$data['releases'][0]??null;
+    if(!$release){http_response_code(404);echo json_encode(['error'=>'Geen uitgave gevonden in MusicBrainz.']);exit;}
+    $detail=@file_get_contents('https://musicbrainz.org/ws/2/release/'.rawurlencode($release['id']).'?inc=recordings+artist-credits&fmt=json',false,$context); $full=$detail?json_decode($detail,true):$release;
+    $tracks=[]; foreach($full['media']??[] as $medium) foreach($medium['tracks']??[] as $track) $tracks[]=($track['number']??'').'. '.($track['title']??'');
+    $mediumFormat=(string)($full['media'][0]['format']??''); $normalized=strtolower($mediumFormat); $collectionFormat=str_contains($normalized,'vinyl')?'LP':((in_array($normalized,['cd','compact disc'],true) || str_contains($normalized,'compact disc'))?'CD':'');
+    echo json_encode(['release'=>['title'=>$full['title']??'', 'artist'=>$full['artist-credit'][0]['name']??'', 'format'=>$mediumFormat, 'collectionFormat'=>$collectionFormat, 'tracks'=>implode("\n",$tracks)]]); exit;
+}
+if (($_GET['action'] ?? '') === 'check') { requireLogin(); header('Content-Type: application/json'); $s=db()->prepare('SELECT artist,title,format FROM records WHERE barcode=? AND user_id=? LIMIT 1'); $s->execute([$_GET['barcode']??'',$_SESSION['user_id']]); $r=$s->fetch(); echo json_encode($r?['found'=>true]+$r:['found'=>false]); exit; }
+
+$count=(int)db()->query('SELECT COUNT(*) FROM users')->fetchColumn();
+if ($_SERVER['REQUEST_METHOD']==='POST') {
+    checkCsrf(); $form=$_POST['form']??'';
+    try {
+        if ($form==='setup' && $count===0) { $email=filter_var(trim($_POST['email']??''),FILTER_VALIDATE_EMAIL); $pass=$_POST['password']??''; if(!$email||strlen($pass)<12) throw new RuntimeException('Gebruik een geldig e-mailadres en een wachtzin van minimaal 12 tekens.'); $algo=defined('PASSWORD_ARGON2ID')?PASSWORD_ARGON2ID:PASSWORD_BCRYPT; db()->prepare('INSERT INTO users(email,password) VALUES (?,?)')->execute([$email,password_hash($pass,$algo)]); session_regenerate_id(true); $_SESSION['user_id']=db()->lastInsertId(); flash('Account veilig aangemaakt.'); redirect('?page=dashboard'); }
+        if ($form==='login') { $s=db()->prepare('SELECT * FROM users WHERE email=?');$s->execute([trim($_POST['email']??'')]);$u=$s->fetch(); if(!$u||!password_verify($_POST['password']??'',$u['password'])) throw new RuntimeException('E-mailadres of wachtwoord klopt niet.'); session_regenerate_id(true);$_SESSION['user_id']=$u['id'];flash('Welkom terug.');redirect('?page=dashboard'); }
+        requireLogin();
+        if ($form==='record') { $artist=trim($_POST['artist']??'');$title=trim($_POST['title']??'');$format=$_POST['format']??'';if(!$artist||!$title||!in_array($format,['CD','LP'],true)) throw new RuntimeException('Artiest, titel en type zijn verplicht.'); $cover=imageUpload('cover');$back=imageUpload('back');$barcodePhoto=imageUpload('barcode_photo'); db()->prepare('INSERT INTO records(artist,title,format,barcode,tracklist,cover_path,back_path,barcode_path,user_id) VALUES(?,?,?,?,?,?,?,?,?)')->execute([$artist,$title,$format,trim($_POST['barcode']??''),trim($_POST['tracklist']??''),$cover,$back,$barcodePhoto,$_SESSION['user_id']]);flash('Toegevoegd aan je collectie.');redirect('?page=dashboard'); }
+    } catch(Throwable $e) { flash($e->getMessage(),'error'); redirect('?page='.($form==='record'?'add':($form==='setup'?'setup':'login'))); }
+}
+
+if ($count===0) layout('Eerste installatie','<section class="card auth"><h1>Maak je kluis</h1><p>Dit is een eenmalige stap. Kies een sterk wachtwoord; er is geen standaardaccount.</p><form method="post"><input type="hidden" name="csrf" value="'.csrf().'"><input type="hidden" name="form" value="setup"><label>E-mailadres</label><input type="email" name="email" autocomplete="email" required><label>Wachtzin <span class="muted">(minimaal 12 tekens)</span></label><input type="password" name="password" minlength="12" autocomplete="new-password" required><div class="actions"><button>Account aanmaken</button></div></form></section>');
+$page=$_GET['page']??(loggedIn()?'dashboard':'login'); if(!loggedIn()&&$page!=='login') redirect('?page=login');
+if($page==='login') layout('Inloggen','<section class="card auth"><h1>Welkom terug</h1><p>Log in om je muziekcollectie te bekijken.</p><form method="post"><input type="hidden" name="csrf" value="'.csrf().'"><input type="hidden" name="form" value="login"><label>E-mailadres</label><input type="email" name="email" autocomplete="email" required><label>Wachtwoord</label><input type="password" name="password" autocomplete="current-password" required><div class="actions"><button>Inloggen</button></div></form></section>');
+requireLogin();
+if($page==='add') layout('Toevoegen','<section class="hero"><h1>Nieuwe plaat vastleggen.</h1><p>Maak foto’s direct met je telefoon. Tekstherkenning en barcodegegevens zijn voorstellen; controleer ze altijd.</p></section><section class="card"><form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf" value="'.csrf().'"><input type="hidden" name="form" value="record"><div class="capture-grid"><div class="capture"><strong>Voorkant</strong><small>Hoesfoto</small><input id="cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" capture="environment"><button class="secondary small" id="read-cover" type="button">Lees hoestekst</button></div><div class="capture"><strong>Achterkant</strong><small>Tracklijst</small><input id="back" type="file" name="back" accept="image/jpeg,image/png,image/webp" capture="environment"><button class="secondary small" id="read-back" type="button">Lees tracklijst</button></div><div class="capture"><strong>Barcode</strong><small>Voor controle</small><input type="file" name="barcode_photo" accept="image/jpeg,image/png,image/webp" capture="environment"></div></div><small id="ocr-status" class="muted"></small><div class="form-grid"><div class="span-2"><label>Barcode</label><div class="actions" style="margin-top:0"><input id="barcode" name="barcode" inputmode="numeric" placeholder="Bijv. 871..." style="flex:1"><button class="secondary small" id="lookup" type="button">Gegevens opzoeken</button></div><small id="lookup-status" class="muted"></small></div><div><label>Artiest</label><input id="artist" name="artist" required></div><div><label>Titel</label><input id="title" name="title" required></div><div><label>Type</label><select id="format" name="format" required><option value="CD">CD</option><option value="LP">LP / vinyl</option></select></div><div><label>Tracklijst</label><textarea id="tracklist" name="tracklist" placeholder="Eén nummer per regel"></textarea></div></div><div class="actions"><button>Opslaan in collectie</button></div></form></section>');
+if($page==='updates') layout('Updates','<section class="card auth"><h1>Software-update</h1><p id="update-message" class="muted">Controleren of er een nieuwe versie is…</p><p>Een update wordt niet automatisch op je hosting geïnstalleerd. Download de versie op GitHub en volg de installatie-instructies, zodat je eerst een back-up kunt maken.</p><div class="actions"><a class="button" href="https://github.com/gitreprtc/mymusiccollection" target="_blank" rel="noopener noreferrer">Open GitHub</a></div></section>');
+if($page==='scan') layout('Barcode lezen','<section class="card scan-box"><h1>Heb ik deze al?</h1><p class="muted">Maak een foto met de achtercamera; de cijfers onder de barcode worden gelezen en met je collectie vergeleken.</p><video id="scanner-video" hidden playsinline style="width:100%;border-radius:12px"></video><div class="actions" style="justify-content:center"><button id="start-scan">Open achtercamera</button></div><p id="scan-status" class="muted"></p><div id="scan-result" class="scan-result">Nog niets gecontroleerd.</div></section>');
+if($page==='record') { $s=db()->prepare('SELECT * FROM records WHERE id=? AND user_id=?');$s->execute([(int)($_GET['id']??0),$_SESSION['user_id']]);$r=$s->fetch();if(!$r){http_response_code(404);layout('Niet gevonden','<p>Deze uitgave bestaat niet.</p>');}$cover=($r['cover_path']||$r['barcode'])?'<img src="?action=image&id='.$r['id'].'" alt="Voorkant van '.e($r['title']).'">':'<div class="cover"></div>';layout($r['title'],'<section class="details"><div>'.$cover.'</div><div><span class="tag">'.e($r['format']).'</span><h1>'.e($r['artist']).'<br>'.e($r['title']).'</h1>'.($r['barcode']?'<p class="muted">Barcode: '.e($r['barcode']).'</p>':'').'<h2>Tracklijst</h2><p class="tracklist">'.(e($r['tracklist'])?:'Niet vastgelegd.').'</p></div></section>'); }
+$statement=db()->prepare('SELECT * FROM records WHERE user_id=? ORDER BY created_at DESC');$statement->execute([$_SESSION['user_id']]);$rows=$statement->fetchAll();$items='';foreach($rows as $r){$image=($r['cover_path']||$r['barcode'])?'<img class="cover" src="?action=image&id='.$r['id'].'" alt="">':'<div class="cover"></div>';$search=strtolower($r['artist'].' '.$r['title'].' '.$r['barcode']);$items.='<article class="record" data-search="'.e($search).'"><a href="?page=record&id='.$r['id'].'">'.$image.'</a><div class="record-body"><span class="tag">'.e($r['format']).'</span><h2>'.e($r['artist']).'</h2><p>'.e($r['title']).'</p></div></article>';}
+layout('Collectie','<section class="hero"><h1>Je muziek, altijd bij de hand.</h1><p>Leg je cd’s en lp’s vast, inclusief hoes, tracklijst en barcode.</p><div class="actions"><a class="button" href="?page=add">+ Nieuwe uitgave</a><a class="button secondary" href="?page=scan">Barcode scannen</a></div></section><div class="toolbar"><strong>'.count($rows).' uitgave'.(count($rows)===1?'':'s').'</strong><input id="filter" type="search" placeholder="Zoek artiest, titel of barcode"></div>'.($items?'<section class="collection collection-list">'.$items.'</section>':'<section class="card empty">Je collectie is nog leeg. <a href="?page=add">Voeg je eerste uitgave toe.</a></section>'));

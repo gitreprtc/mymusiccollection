@@ -1,0 +1,1 @@
+.update-link{border:1px solid transparent;border-radius:999px}.update-link.update-available{background:#fff3c4;border-color:#e7bb36;color:#765100;animation:pulse-update 1.8s ease-in-out infinite}.update-link.update-available::before{content:'● ';color:#db9a00}@keyframes pulse-update{50%{box-shadow:0 0 0 5px #f5c84b33}}
