@@ -35,13 +35,6 @@ Voor productie: forceer HTTPS bij je host, gebruik een lange unieke beheerderswa
 
 De knop **Updates** vergelijkt de lokale versie in `version.json` met de publieke versie op GitHub. Verhoog `version` wanneer je een nieuwe versie naar de `main`-branch pusht. De app installeert nooit zelfstandig code vanaf internet: maak eerst een back-up en upload de update bewust via je hosting.
 
-## Automatisch deployen vanaf GitHub
+## Updaten via HTTPS
 
-Elke push naar `main` kan automatisch naar de hosting worden geplaatst via de GitHub Actions-workflow in `.github/workflows/deploy.yml`. Voeg in GitHub onder **Settings → Secrets and variables → Actions** deze repository-secrets toe:
-
-- `FTP_SERVER` — bijvoorbeeld `ftps://ftp.jouwdomein.nl`
-- `FTP_USERNAME`
-- `FTP_PASSWORD`
-- `FTP_SERVER_DIR` — bijvoorbeeld `/public_html/`
-
-De workflow gebruikt FTPS en verwijdert nooit bestanden. De map `storage` is uitgesloten zodat de database en geüploade foto’s op de hosting behouden blijven. De document-root van het domein moet naar `public` blijven wijzen.
+De pagina **Updates** in de app haalt na een klik via HTTPS de `main`-versie van de openbare GitHub-repository op. Voor iedere installatie maakt de app een zipback-up in `storage/backups`; de map `storage` zelf wordt nooit vervangen. Hiervoor moet PHP de extensies `curl` en `zip` hebben en schrijfrechten op de appmap én `storage`.
