@@ -38,3 +38,7 @@ De knop **Updates** vergelijkt de lokale versie in `version.json` met de publiek
 ## Updaten via HTTPS
 
 De pagina **Updates** in de app haalt na een klik via HTTPS de `main`-versie van de openbare GitHub-repository op. Voor iedere installatie maakt de app een zipback-up in `storage/backups`; de map `storage` zelf wordt nooit vervangen. Hiervoor moet PHP de extensies `curl` en `zip` hebben en schrijfrechten op de appmap én `storage`.
+
+## Krachtige barcodeherkenning
+
+De scanpagina maakt een foto met de achtercamera en laat de cijfers onder de barcode server-side herkennen. Voeg daarvoor in het beheerpanel van je hosting een omgevingsvariabele `OPENAI_API_KEY` toe. De sleutel staat niet in GitHub en wordt niet naar de browser gestuurd. Optioneel kun je `OPENAI_VISION_MODEL` instellen; standaard wordt `gpt-4.1-mini` gebruikt. Alleen de gemaakte barcodefoto wordt naar de vision-API gestuurd; de teruggegeven cijferreeks wordt lokaal op het barcodecontrolecijfer gevalideerd.
