@@ -47,7 +47,8 @@ async function scanBarcodeFallback() {
     status.textContent='Richt de camera op de barcode…';
   } catch(e) { box.hidden=true; status.textContent='Camera-scanner kon niet starten. Geef cameratoestemming en gebruik HTTPS.'; }
 }
-async function checkOwned(barcode) { const r=await fetch(`?action=check&barcode=${encodeURIComponent(barcode)}`); const d=await r.json(); $('#scan-result').innerHTML=d.found?`✅ Je hebt deze: <strong>${d.artist} — ${d.title}</strong> (${d.format}).`:'❌ Deze barcode staat nog niet in je collectie.'; }
+async function checkOwned(barcode) { const r=await fetch(`?action=check&barcode=${encodeURIComponent(barcode)}`); const d=await r.json(); $('#scan-result').innerHTML=d.found?`✅ Je hebt deze: <strong>${d.artist} — ${d.title}</strong> (${d.format}).`:`❌ Deze barcode staat nog niet in je collectie.<div class="actions" style="justify-content:center"><button id="add-scanned-record">Toevoegen aan collectie</button></div>`; $('#add-scanned-record')?.addEventListener('click',()=>addScannedRecord(barcode)); }
+async function addScannedRecord(barcode){const output=$('#scan-result'),csrf=$('#csrf-token')?.dataset.token,form=new FormData();form.append('csrf',csrf||'');form.append('barcode',barcode);form.append('scan_photo',sessionStorage.getItem('barcode-scan-photo')||'');output.textContent='Albumgegevens ophalen en toevoegen…';try{const response=await fetch('?action=add-from-barcode',{method:'POST',body:form});const data=await response.json();if(!response.ok)throw new Error(data.error||'Toevoegen mislukt');sessionStorage.removeItem('barcode-scan-photo');output.innerHTML=`✅ Toegevoegd: <strong>${data.artist} — ${data.title}</strong> (${data.format}).`;}catch(error){output.textContent=error.message||'Toevoegen mislukt.';}}
 async function readText(source, target, mode) {
   const file=$(source)?.files?.[0], status=$('#ocr-status');
   if(!file){status.textContent='Kies of maak eerst de bijbehorende foto.';return;}

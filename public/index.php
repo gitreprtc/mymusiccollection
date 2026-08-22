@@ -56,6 +56,18 @@ function outputCoverForBarcode(string $barcode): never {
     foreach ($http_response_header ?? [] as $header) if (stripos($header,'Content-Type:')===0) { header($header); break; }
     header('Cache-Control: private, max-age=604800'); echo $image; exit;
 }
+function musicRelease(string $barcode): array {
+    $safe=preg_replace('/[^0-9A-Za-z]/','',$barcode);
+    $context=stream_context_create(['http'=>['header'=>"User-Agent: MijnMuziekCollectie/1.0 (personal collection app)\r\nAccept: application/json\r\n",'timeout'=>10]]);
+    $raw=@file_get_contents('https://musicbrainz.org/ws/2/release?query=barcode:'.rawurlencode($safe).'&fmt=json&limit=1',false,$context);
+    $search=$raw?json_decode($raw,true):null; $release=$search['releases'][0]??null; if (!$release) throw new RuntimeException('Geen albumgegevens gevonden voor deze barcode.');
+    $detail=@file_get_contents('https://musicbrainz.org/ws/2/release/'.rawurlencode($release['id']).'?inc=recordings+artist-credits&fmt=json',false,$context);
+    $full=$detail?json_decode($detail,true):$release; $artist=$full['artist-credit'][0]['name']??''; $title=$full['title']??'';
+    if (!$artist || !$title) throw new RuntimeException('De gevonden uitgave bevat geen bruikbare artiest of titel.');
+    $tracks=[]; foreach($full['media']??[] as $medium) foreach($medium['tracks']??[] as $track) $tracks[]=($track['number']??'').'. '.($track['title']??'');
+    $mediumFormat=(string)($full['media'][0]['format']??''); $format=str_contains(strtolower($mediumFormat),'vinyl')?'LP':'CD';
+    return ['artist'=>$artist,'title'=>$title,'format'=>$format,'tracklist'=>implode("\n",$tracks)];
+}
 function layout(string $title, string $content): never {
     $flash=$_SESSION['flash'] ?? null; unset($_SESSION['flash']); $logged=loggedIn(); $page=$_GET['page'] ?? 'dashboard';
     $assetVersion=rawurlencode((json_decode((string)@file_get_contents(ROOT.'/version.json'),true)['version']??'dev'));
@@ -83,6 +95,7 @@ if (($_GET['action'] ?? '') === 'lookup') { requireLogin(); header('Content-Type
     echo json_encode(['release'=>['title'=>$full['title']??'', 'artist'=>$full['artist-credit'][0]['name']??'', 'format'=>$mediumFormat, 'collectionFormat'=>$collectionFormat, 'tracks'=>implode("\n",$tracks)]]); exit;
 }
 if (($_GET['action'] ?? '') === 'check') { requireLogin(); header('Content-Type: application/json'); $s=db()->prepare('SELECT artist,title,format FROM records WHERE barcode=? AND user_id=? LIMIT 1'); $s->execute([$_GET['barcode']??'',$_SESSION['user_id']]); $r=$s->fetch(); echo json_encode($r?['found'=>true]+$r:['found'=>false]); exit; }
+if (($_GET['action'] ?? '') === 'add-from-barcode') { requireLogin(); header('Content-Type: application/json'); checkCsrf(); try { $barcode=preg_replace('/[^0-9A-Za-z]/','',$_POST['barcode']??''); if (strlen($barcode)<8) throw new RuntimeException('Ongeldige barcode.'); $existing=db()->prepare('SELECT id FROM records WHERE barcode=? AND user_id=?'); $existing->execute([$barcode,$_SESSION['user_id']]); if ($existing->fetch()) throw new RuntimeException('Deze uitgave staat al in je collectie.'); $release=musicRelease($barcode); $photo=$_POST['scan_photo']??''; if (!preg_match('#^scans/[a-f0-9]{40}\.(jpg|png|webp)$#',$photo) || !is_file(UPLOADS.'/'.$photo)) $photo=null; db()->prepare('INSERT INTO records(artist,title,format,barcode,tracklist,barcode_path,user_id) VALUES(?,?,?,?,?,?,?)')->execute([$release['artist'],$release['title'],$release['format'],$barcode,$release['tracklist'],$photo,$_SESSION['user_id']]); echo json_encode($release); } catch(Throwable $e) { http_response_code(422); echo json_encode(['error'=>$e->getMessage()]); } exit; }
 
 $count=(int)db()->query('SELECT COUNT(*) FROM users')->fetchColumn();
 if ($_SERVER['REQUEST_METHOD']==='POST') {
