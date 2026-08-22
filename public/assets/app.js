@@ -64,4 +64,25 @@ async function readText(source, target, mode) {
     status.textContent='Tekstvoorstel ingevuld — controleer het zorgvuldig voor je opslaat.';
   } catch(e) { status.textContent='Tekstherkenning is niet gelukt; vul de gegevens handmatig in.'; }
 }
-document.addEventListener('DOMContentLoaded',()=>{ $('#lookup')?.addEventListener('click',lookupBarcode); $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover')); $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back')); $('#filter')?.addEventListener('input',e=>document.querySelectorAll('.record').forEach(x=>x.hidden=!x.dataset.search.includes(e.target.value.toLowerCase()))); });
+document.addEventListener('DOMContentLoaded',()=>{
+  $('#lookup')?.addEventListener('click',lookupBarcode);
+  $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
+  $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
+  const search=$('#filter'), format=$('#format-filter'), count=$('#collection-count');
+  const applyCollectionFilter=()=>{
+    if(!search && !format) return;
+    const query=(search?.value||'').trim().toLocaleLowerCase('nl-NL');
+    const type=format?.value||'';
+    let visible=0;
+    document.querySelectorAll('.collection-list .record').forEach(record=>{
+      const matchesText=(record.dataset.search||'').toLocaleLowerCase('nl-NL').includes(query);
+      const matchesType=!type || record.dataset.format===type;
+      record.hidden=!(matchesText && matchesType);
+      if(!record.hidden) visible++;
+    });
+    if(count) count.textContent=`${visible} uitgave${visible===1?'':'s'}`;
+  };
+  search?.addEventListener('input',applyCollectionFilter);
+  search?.addEventListener('search',applyCollectionFilter);
+  format?.addEventListener('change',applyCollectionFilter);
+});
