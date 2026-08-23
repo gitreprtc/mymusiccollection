@@ -15,6 +15,8 @@ Gebruik geen standaardwachtwoord: de app slaat uitsluitend een sterke `password_
 
 Bij het invullen kan de app gratis zoeken in [MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API): titel, artiest, medium en tracklijst worden als voorstel ingevuld. Controleer die gegevens altijd; persingen kunnen verschillen. Er worden geen MusicBrainz-gegevens lokaal overschreven zonder dat je op Opslaan klikt.
 
+Als MusicBrainz geen uitgave op barcode vindt, kan de app optioneel [Discogs](https://www.discogs.com/) proberen. Stel daarvoor op de hosting `DISCOGS_TOKEN` in met een persoonlijke Discogs API-token. Discogs is vooral nuttig voor LP-persingen en levert dan ook de tracklijst en hoes aan. Metadata uit deze fallback wordt als afkomstig van Discogs gemarkeerd.
+
 Het mediumformaat uit de gevonden uitgave stelt automatisch **CD** of **LP** in. Bij een onbekend of afwijkend formaat blijft de bestaande keuze staan, zodat je die zelf kunt bepalen.
 
 Wanneer je geen eigen voorkantfoto toevoegt, wordt in het collectieoverzicht automatisch de beschikbare hoes van MusicBrainz' Cover Art Archive getoond. Maak je een foto in het barcodeveld, dan leest de browser de barcode uit die foto en start de zoekopdracht automatisch.
@@ -47,4 +49,4 @@ De scanpagina maakt een foto met de achtercamera en slaat die beveiligd op voord
 
 Wanneer een scan niet in de collectie voorkomt, vraagt de app eerst om bevestiging. Na bevestiging worden gegevens via MusicBrainz opgehaald en wordt de uitgave direct aan de collectie toegevoegd.
 
-Albumhoezen worden bij het toevoegen via MusicBrainz’ Cover Art Archive gedownload en lokaal bewaard. Verwijderde albums gaan eerst naar de prullenbak; alleen via **Prullenbak legen** worden records en gekoppelde foto’s definitief verwijderd.
+Albumhoezen worden bij het toevoegen via MusicBrainz’ Cover Art Archive of, bij de Discogs-fallback, Discogs gedownload en lokaal bewaard. Verwijderde albums gaan eerst naar de prullenbak; alleen via **Prullenbak legen** worden records en gekoppelde foto’s definitief verwijderd.

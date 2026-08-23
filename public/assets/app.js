@@ -18,7 +18,7 @@ async function lookupBarcode() {
     if (r.year && $('#release_year')) $('#release_year').value = r.year;
     if (r.duration_seconds && $('#duration_seconds')) $('#duration_seconds').value = r.duration_seconds;
     if ($('#is_compilation')) $('#is_compilation').checked=Boolean(r.is_compilation);
-    if(status) status.textContent = `Voorstel ingevuld${r.collectionFormat ? `; type automatisch ingesteld op ${r.collectionFormat}.` : '.'} Controleer en pas aan waar nodig.`;
+    if(status) status.textContent = `Voorstel ingevuld via ${r.source||'MusicBrainz'}${r.collectionFormat ? `; type automatisch ingesteld op ${r.collectionFormat}.` : '.'} Controleer en pas aan waar nodig.`;
   } catch (e) { if(status) status.textContent = e.message; }
 }
 
@@ -85,14 +85,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
-  const search=$('#filter'), format=$('#format-filter'), count=$('#collection-count');
+  const search=$('#filter'), format=$('#format-filter'), withinAlbum=$('#search-within-album'), count=$('#collection-count');
   const applyCollectionFilter=()=>{
     if(!search && !format) return;
     const query=(search?.value||'').trim().toLocaleLowerCase('nl-NL');
     const type=format?.value||'';
     let visible=0;
     document.querySelectorAll('.collection-list .record').forEach(record=>{
-      const matchesText=(record.dataset.search||'').toLocaleLowerCase('nl-NL').includes(query);
+      const searchable=(record.dataset.search||'')+(withinAlbum?.checked?' '+(record.dataset.trackSearch||''):'');
+      const matchesText=searchable.toLocaleLowerCase('nl-NL').includes(query);
       const matchesType=!type || record.dataset.format===type;
       record.hidden=!(matchesText && matchesType);
       if(!record.hidden) visible++;
@@ -102,4 +103,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   search?.addEventListener('input',applyCollectionFilter);
   search?.addEventListener('search',applyCollectionFilter);
   format?.addEventListener('change',applyCollectionFilter);
+  withinAlbum?.addEventListener('change',applyCollectionFilter);
 });
