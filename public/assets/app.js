@@ -85,7 +85,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
-  const search=$('#filter'), format=$('#format-filter'), withinAlbum=$('#search-within-album'), count=$('#collection-count');
+  const titleField=$('#title');
+  if(titleField){
+    const panel=document.createElement('div');
+    Object.assign(panel.style,{position:'absolute',zIndex:'6',top:'100%',left:'0',right:'0',background:'#fff',border:'1px solid #ded8dd',borderRadius:'10px',boxShadow:'0 10px 24px rgba(30,20,28,.12)',overflow:'hidden'});panel.hidden=true;
+    const parent=titleField.parentElement;parent.style.position='relative';parent.append(panel);let searchTimer,lastQuery='';
+    titleField.addEventListener('input',()=>{clearTimeout(searchTimer);const query=titleField.value.trim();if(query.length<2){panel.hidden=true;return;}searchTimer=setTimeout(async()=>{lastQuery=query;try{const response=await fetch('?action=title-suggestions&q='+encodeURIComponent(query));const data=await response.json();if(query!==lastQuery||titleField.value.trim()!==query)return;panel.replaceChildren();for(const item of data.results||[]){const button=document.createElement('button');button.type='button';button.style.cssText='display:block;width:100%;padding:9px 12px;border:0;border-top:1px solid #eee8ec;background:#fff;text-align:left;cursor:pointer';const main=document.createElement('strong');main.textContent=`${item.artist} — ${item.title}`;const meta=document.createElement('small');meta.style.cssText='display:block;color:#6d6870;margin-top:2px';meta.textContent=`${item.source}${item.year?` · ${item.year}`:''} · ${item.format}`;button.append(main,meta);button.addEventListener('click',()=>{titleField.value=item.title;$('#artist').value=item.artist;if(item.year&&$('#release_year'))$('#release_year').value=item.year;if(item.format&&$('#format'))$('#format').value=item.format;panel.hidden=true;});panel.append(button);}panel.hidden=panel.childElementCount===0;}catch(error){panel.hidden=true;}},350);});
+  }
+  const search=$('#filter'), format=$('#format-filter'), compilation=$('#compilation-filter'), sort=$('#sort-filter'), withinAlbum=$('#search-within-album'), count=$('#collection-count');
   const suggestions=document.createElement('div');
   suggestions.id='search-suggestions';
   suggestions.hidden=true;
@@ -100,16 +107,21 @@ document.addEventListener('DOMContentLoaded',()=>{
     link.append(album,match); suggestions.append(link);
   };
   const applyCollectionFilter=()=>{
-    if(!search && !format) return;
+    if(!search && !format && !compilation && !sort) return;
     const query=(search?.value||'').trim().toLocaleLowerCase('nl-NL');
     const type=format?.value||'';
+    const compilationValue=compilation?.value||'';
+    const list=document.querySelector('.collection-list');
+    const records=[...document.querySelectorAll('.collection-list .record')];
+    if(list) records.sort((a,b)=>{if(!sort?.value)return Number(b.dataset.order)-Number(a.dataset.order);const field=sort.value==='artist'?'artist':'title';return (a.dataset[field]||'').localeCompare(b.dataset[field]||'','nl-NL',{sensitivity:'base'});}).forEach(record=>list.append(record));
     let visible=0, suggestionCount=0;
     suggestions.replaceChildren();
     document.querySelectorAll('.collection-list .record').forEach(record=>{
       const searchable=(record.dataset.search||'')+(withinAlbum?.checked?' '+(record.dataset.trackSearch||''):'');
       const matchesText=searchable.toLocaleLowerCase('nl-NL').includes(query);
       const matchesType=!type || record.dataset.format===type;
-      record.hidden=!(matchesText && matchesType);
+      const matchesCompilation=!compilationValue || record.dataset.compilation===compilationValue;
+      record.hidden=!(matchesText && matchesType && matchesCompilation);
       if(!record.hidden) visible++;
       if(!query || !matchesText || suggestionCount>=8) return;
       const artist=record.dataset.artist||'', title=record.dataset.title||'', barcode=record.dataset.barcode||'';
@@ -130,5 +142,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   search?.addEventListener('input',applyCollectionFilter);
   search?.addEventListener('search',applyCollectionFilter);
   format?.addEventListener('change',applyCollectionFilter);
+  compilation?.addEventListener('change',applyCollectionFilter);
+  sort?.addEventListener('change',applyCollectionFilter);
   withinAlbum?.addEventListener('change',applyCollectionFilter);
 });
