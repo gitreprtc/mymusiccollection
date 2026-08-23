@@ -65,6 +65,12 @@ async function readText(source, target, mode) {
   } catch(e) { status.textContent='Tekstherkenning is niet gelukt; vul de gegevens handmatig in.'; }
 }
 document.addEventListener('DOMContentLoaded',()=>{
+  const menuToggle=$('#menu-toggle'), menu=$('#site-nav');
+  menuToggle?.addEventListener('click',()=>{
+    const open=menu?.classList.toggle('is-open')||false;
+    menuToggle.setAttribute('aria-expanded',String(open));
+    menuToggle.setAttribute('aria-label',open?'Menu sluiten':'Menu openen');
+  });
   $('#lookup')?.addEventListener('click',lookupBarcode);
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
