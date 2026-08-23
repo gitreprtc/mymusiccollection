@@ -1,10 +1,10 @@
 const $ = (s) => document.querySelector(s);
 
 async function lookupBarcode() {
-  const barcode = $('#barcode').value.trim();
+  const barcode = $('#barcode')?.value.trim()||'';
   const status = $('#lookup-status');
-  if (!barcode) { status.textContent = 'Vul eerst een barcode in.'; return; }
-  status.textContent = 'Zoeken in MusicBrainz…';
+  if (!barcode) { if(status) status.textContent = 'Vul eerst een barcode in.'; return; }
+  if(status) status.textContent = 'Zoeken in MusicBrainz…';
   try {
     const response = await fetch(`?action=lookup&barcode=${encodeURIComponent(barcode)}`, {headers:{Accept:'application/json'}});
     const data = await response.json();
@@ -14,8 +14,11 @@ async function lookupBarcode() {
     if (r.artist) $('#artist').value = r.artist;
     if (r.collectionFormat) $('#format').value = r.collectionFormat;
     if (r.tracks) $('#tracklist').value = r.tracks;
-    status.textContent = `Voorstel ingevuld${r.collectionFormat ? `; type automatisch ingesteld op ${r.collectionFormat}.` : '.'} Controleer en pas aan waar nodig.`;
-  } catch (e) { status.textContent = e.message; }
+    if (r.year && $('#release_year')) $('#release_year').value = r.year;
+    if (r.duration_seconds && $('#duration_seconds')) $('#duration_seconds').value = r.duration_seconds;
+    if ($('#is_compilation')) $('#is_compilation').checked=Boolean(r.is_compilation);
+    if(status) status.textContent = `Voorstel ingevuld${r.collectionFormat ? `; type automatisch ingesteld op ${r.collectionFormat}.` : '.'} Controleer en pas aan waar nodig.`;
+  } catch (e) { if(status) status.textContent = e.message; }
 }
 
 async function scanBarcode() {
@@ -72,6 +75,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     menuToggle.setAttribute('aria-label',open?'Menu sluiten':'Menu openen');
   });
   $('#lookup')?.addEventListener('click',lookupBarcode);
+  let lastCheckedBarcode='';
+  $('#barcode')?.addEventListener('blur',event=>{
+    const barcode=event.currentTarget.value.trim();
+    if(barcode.length<8 || barcode===lastCheckedBarcode) return;
+    lastCheckedBarcode=barcode;
+    lookupBarcode();
+  });
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const search=$('#filter'), format=$('#format-filter'), count=$('#collection-count');
