@@ -24,12 +24,12 @@ final class VisionBarcode
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file);
         if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) throw new RuntimeException('Gebruik een JPG, PNG of WebP-foto.');
         $image = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($file));
-        $body = ['model' => getenv('OPENAI_VISION_MODEL') ?: 'gpt-4.1-mini', 'input' => [['role' => 'user', 'content' => [
-            ['type' => 'input_text', 'text' => 'Read only the printed digits below the barcode in this image. Return exactly one EAN, UPC, or GTIN number with no spaces, punctuation, or other text. If uncertain, return NONE.'],
-            ['type' => 'input_image', 'image_url' => $image, 'detail' => 'high'],
+        $body = ['model' => getenv('OPENAI_VISION_MODEL') ?: 'gpt-5-nano', 'reasoning' => ['effort' => 'minimal'], 'input' => [['role' => 'user', 'content' => [
+            ['type' => 'input_text', 'text' => 'Read the printed barcode digits only. Return one valid EAN, UPC, or GTIN with digits only; otherwise return NONE.'],
+            ['type' => 'input_image', 'image_url' => $image, 'detail' => 'low'],
         ]]]];
         $curl = curl_init('https://api.openai.com/v1/responses');
-        curl_setopt_array($curl, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode($body, JSON_THROW_ON_ERROR), CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $key, 'Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 45]);
+        curl_setopt_array($curl, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode($body, JSON_THROW_ON_ERROR), CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $key, 'Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 25]);
         $response = curl_exec($curl); $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE); curl_close($curl);
         $data = is_string($response) ? json_decode($response, true) : null;
         if ($status < 200 || $status >= 300 || !is_array($data)) throw new RuntimeException('Vision-herkenning is tijdelijk niet beschikbaar.');
