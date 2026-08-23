@@ -41,7 +41,7 @@ De pagina **Updates** in de app haalt na een klik via HTTPS de `main`-versie van
 
 ## Krachtige barcodeherkenning
 
-De scanpagina maakt een foto met de achtercamera en slaat die beveiligd op voordat de cijfers onder de barcode server-side worden herkend. Stel `OPENAI_API_KEY` uitsluitend als omgevingsvariabele in via het beheerpaneel van je hosting; de app schrijft of leest geen API-sleutelbestand en ontvangt de sleutel nooit vanuit de browser. Optioneel kun je `OPENAI_VISION_MODEL` instellen; standaard wordt `gpt-4.1-mini` gebruikt. Alleen de gemaakte barcodefoto wordt naar de vision-API gestuurd; de teruggegeven cijferreeks wordt lokaal op het barcodecontrolecijfer gevalideerd. Bij toevoegen wordt de opgeslagen barcodefoto aan de uitgave gekoppeld.
+De scanpagina maakt een foto met de achtercamera en slaat die beveiligd op voordat de cijfers onder de barcode server-side worden herkend. Configureer de sleutel na inloggen via **Integraties → OpenAI Vision**. De sleutel wordt buiten de webmap opgeslagen, staat niet in GitHub en wordt niet naar de browser gestuurd. Een beheerder kan in plaats daarvan ook de omgevingsvariabele `OPENAI_API_KEY` instellen. Optioneel kun je `OPENAI_VISION_MODEL` instellen; standaard wordt `gpt-4.1-mini` gebruikt. Alleen de gemaakte barcodefoto wordt naar de vision-API gestuurd; de teruggegeven cijferreeks wordt lokaal op het barcodecontrolecijfer gevalideerd. Bij toevoegen wordt de opgeslagen barcodefoto aan de uitgave gekoppeld.
 
 Wanneer een scan niet in de collectie voorkomt, vraagt de app eerst om bevestiging. Na bevestiging worden gegevens via MusicBrainz opgehaald en wordt de uitgave direct aan de collectie toegevoegd.
 

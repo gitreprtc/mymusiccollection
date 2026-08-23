@@ -14,6 +14,7 @@ async function lookupBarcode() {
     if (r.artist) $('#artist').value = r.artist;
     if (r.collectionFormat) $('#format').value = r.collectionFormat;
     if (r.tracks) $('#tracklist').value = r.tracks;
+    if (r.track_artists && $('#track_artists')) $('#track_artists').value = r.track_artists;
     if (r.year && $('#release_year')) $('#release_year').value = r.year;
     if (r.duration_seconds && $('#duration_seconds')) $('#duration_seconds').value = r.duration_seconds;
     if ($('#is_compilation')) $('#is_compilation').checked=Boolean(r.is_compilation);
