@@ -3,24 +3,21 @@ declare(strict_types=1);
 
 final class VisionBarcode
 {
-    private const KEY_FILE = __DIR__ . '/../storage/openai-api-key.txt';
+    private const LEGACY_KEY_FILE = __DIR__ . '/../storage/openai-api-key.txt';
 
     public static function configured(): bool { return self::key() !== ''; }
 
-    public static function saveKey(string $key): void
-    {
-        $key = trim($key);
-        if (strlen($key) < 20) throw new RuntimeException('Dit lijkt geen geldige OpenAI API-sleutel.');
-        if (file_put_contents(self::KEY_FILE, $key . "\n", LOCK_EX) === false) throw new RuntimeException('De API-sleutel kon niet veilig worden opgeslagen.');
-        @chmod(self::KEY_FILE, 0600);
-    }
+    public static function legacyKeyPresent(): bool { return is_file(self::LEGACY_KEY_FILE); }
 
-    public static function removeKey(): void { if (is_file(self::KEY_FILE) && !unlink(self::KEY_FILE)) throw new RuntimeException('De opgeslagen API-sleutel kon niet worden verwijderd.'); }
+    public static function removeLegacyKey(): void
+    {
+        if (is_file(self::LEGACY_KEY_FILE) && !unlink(self::LEGACY_KEY_FILE)) throw new RuntimeException('Het oude sleutelbestand kon niet worden verwijderd.');
+    }
 
     public static function read(string $file): string
     {
         $key = self::key();
-        if ($key === '') throw new RuntimeException('Vision-herkenning is nog niet ingesteld. Voeg OPENAI_API_KEY toe in de hostingomgeving.');
+        if ($key === '') throw new RuntimeException('Vision-herkenning is nog niet ingesteld. Stel OPENAI_API_KEY in als hosting-omgevingsvariabele.');
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file);
         if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) throw new RuntimeException('Gebruik een JPG, PNG of WebP-foto.');
         $image = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($file));
@@ -48,8 +45,6 @@ final class VisionBarcode
 
     private static function key(): string
     {
-        $environment = trim((string)getenv('OPENAI_API_KEY'));
-        if ($environment !== '') return $environment;
-        return is_file(self::KEY_FILE) ? trim((string)file_get_contents(self::KEY_FILE)) : '';
+        return trim((string)getenv('OPENAI_API_KEY'));
     }
 }
