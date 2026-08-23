@@ -86,19 +86,46 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const search=$('#filter'), format=$('#format-filter'), withinAlbum=$('#search-within-album'), count=$('#collection-count');
+  const suggestions=document.createElement('div');
+  suggestions.id='search-suggestions';
+  suggestions.hidden=true;
+  search?.closest('.collection-filters')?.append(suggestions);
+  const addSuggestion=(record,label,detail)=>{
+    const link=document.createElement('a'), identity=record.querySelectorAll('.record-identity p');
+    link.href=record.querySelector('a')?.href||'#';
+    const album=document.createElement('strong');
+    album.textContent=`${identity[0]?.lastChild?.textContent.trim()||''} — ${identity[1]?.lastChild?.textContent.trim()||''}`;
+    const match=document.createElement('span');
+    match.textContent=`${label}: ${detail}`;
+    link.append(album,match); suggestions.append(link);
+  };
   const applyCollectionFilter=()=>{
     if(!search && !format) return;
     const query=(search?.value||'').trim().toLocaleLowerCase('nl-NL');
     const type=format?.value||'';
-    let visible=0;
+    let visible=0, suggestionCount=0;
+    suggestions.replaceChildren();
     document.querySelectorAll('.collection-list .record').forEach(record=>{
       const searchable=(record.dataset.search||'')+(withinAlbum?.checked?' '+(record.dataset.trackSearch||''):'');
       const matchesText=searchable.toLocaleLowerCase('nl-NL').includes(query);
       const matchesType=!type || record.dataset.format===type;
       record.hidden=!(matchesText && matchesType);
       if(!record.hidden) visible++;
+      if(!query || !matchesText || suggestionCount>=8) return;
+      const artist=record.dataset.artist||'', title=record.dataset.title||'', barcode=record.dataset.barcode||'';
+      if(artist.toLocaleLowerCase('nl-NL').includes(query)) { addSuggestion(record,'Artiest',artist); suggestionCount++; return; }
+      if(title.toLocaleLowerCase('nl-NL').includes(query)) { addSuggestion(record,'Albumtitel',title); suggestionCount++; return; }
+      if(barcode.includes(query)) { addSuggestion(record,'Barcode',barcode); suggestionCount++; return; }
+      if(withinAlbum?.checked){
+        const tracks=(record.dataset.trackTitles||'').split(/\r?\n/), artists=(record.dataset.trackArtists||'').split(/\r?\n/);
+        const index=tracks.findIndex(track=>track.toLocaleLowerCase('nl-NL').includes(query));
+        if(index>=0) { addSuggestion(record,'Nummer',`${tracks[index]}${artists[index]?` — ${artists[index]}`:''}`); suggestionCount++; return; }
+        const artistIndex=artists.findIndex(name=>name.toLocaleLowerCase('nl-NL').includes(query));
+        if(artistIndex>=0) { addSuggestion(record,'Uitvoerende artiest',`${artists[artistIndex]} — ${tracks[artistIndex]||'nummer'}`); suggestionCount++; }
+      }
     });
     if(count) count.textContent=`${visible} uitgave${visible===1?'':'s'}`;
+    suggestions.hidden=!query || suggestionCount===0;
   };
   search?.addEventListener('input',applyCollectionFilter);
   search?.addEventListener('search',applyCollectionFilter);
