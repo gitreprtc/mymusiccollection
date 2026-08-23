@@ -26,7 +26,7 @@ final class VisionBarcode
         $image = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($file));
         $model = getenv('OPENAI_VISION_MODEL') ?: 'gpt-5-nano';
         $body = ['model' => $model, 'input' => [['role' => 'user', 'content' => [
-            ['type' => 'input_text', 'text' => 'Read the printed barcode digits only. Return one valid EAN, UPC, or GTIN with digits only; otherwise return NONE.'],
+            ['type' => 'input_text', 'text' => 'Read one complete barcode from this image. Include every printed digit, especially the UPC-A guard digits printed outside the bars: the first digit on the far left and the final check digit on the far right. Return one valid EAN, UPC, or GTIN with digits only; otherwise return NONE.'],
             ['type' => 'input_image', 'image_url' => $image, 'detail' => 'high'],
         ]]]];
         if (str_starts_with($model, 'gpt-5')) $body['reasoning'] = ['effort' => 'minimal'];
