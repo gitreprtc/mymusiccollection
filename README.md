@@ -21,9 +21,11 @@ Wanneer je geen eigen voorkantfoto toevoegt, wordt in het collectieoverzicht aut
 
 Als de strepen in de barcodefoto niet goed herkenbaar zijn, probeert de app ook de gedrukte cijfers onder de barcode uit te lezen. Controleer het gevonden nummer voordat je opslaat.
 
+Een barcode kan per collectie maar één keer voorkomen. Dit geldt zowel voor handmatig toevoegen als voor toevoegen via de scanner; een verwijderde uitgave kun je vanuit de prullenbak terugplaatsen.
+
 ## Veiligheid
 
-- Login met veilige, `HttpOnly`/`SameSite` sessiecookie en sessie-id-rotatie.
+- Login met veilige, `HttpOnly`/`SameSite` sessiecookie, sessie-id-rotatie en een schuivende geldigheid van één jaar.
 - Wachtwoorden met Argon2id (of bcrypt als dat niet beschikbaar is).
 - CSRF-tokens op alle muterende formulieren.
 - Foto's worden gevalideerd, krijgen willekeurige bestandsnamen en zijn alleen na inloggen via PHP te bekijken.
