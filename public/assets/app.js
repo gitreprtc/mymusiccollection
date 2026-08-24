@@ -137,10 +137,14 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
     if(count) count.textContent=`${visible} uitgave${visible===1?'':'s'}`;
-    suggestions.hidden=!query || suggestionCount===0;
+    suggestions.hidden=!query || suggestionCount===0 || document.activeElement!==search;
   };
   search?.addEventListener('input',applyCollectionFilter);
   search?.addEventListener('search',applyCollectionFilter);
+  search?.addEventListener('focus',()=>{if(search.value.trim()&&suggestions.childElementCount)suggestions.hidden=false;});
+  search?.addEventListener('keydown',event=>{if(event.key==='Escape')suggestions.hidden=true;});
+  document.addEventListener('pointerdown',event=>{if(event.target!==search&&!suggestions.contains(event.target))suggestions.hidden=true;});
+  document.addEventListener('focusin',event=>{if(event.target!==search&&!suggestions.contains(event.target))suggestions.hidden=true;});
   format?.addEventListener('change',applyCollectionFilter);
   compilation?.addEventListener('change',applyCollectionFilter);
   sort?.addEventListener('change',applyCollectionFilter);
