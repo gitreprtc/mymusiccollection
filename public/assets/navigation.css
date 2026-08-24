@@ -1,1 +1,1 @@
-.mobile-scan-link{display:none}@media(max-width:640px){.topbar nav .mobile-scan-link{display:block}}
+.mobile-scan-link,.hero .actions a[href^="?page=scan"]{display:none}@media(max-width:640px){.topbar nav .mobile-scan-link{display:block}.hero .actions a[href^="?page=scan"]{display:inline-block}}
