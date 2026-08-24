@@ -75,6 +75,21 @@ document.addEventListener('DOMContentLoaded',()=>{
     menuToggle.setAttribute('aria-expanded',String(open));
     menuToggle.setAttribute('aria-label',open?'Menu sluiten':'Menu openen');
   });
+  const metadataEditor=$('#metadata-editor');
+  let lastEditButton=null;
+  document.querySelectorAll('[data-edit-target]').forEach(button=>button.addEventListener('click',()=>{
+    const target=document.getElementById(button.dataset.editTarget||'');
+    if(!metadataEditor||!target)return;
+    lastEditButton=button;
+    metadataEditor.hidden=false;
+    metadataEditor.scrollIntoView({behavior:'smooth',block:'start'});
+    window.setTimeout(()=>{target.focus();if(typeof target.select==='function'&&target.tagName==='INPUT')target.select();},250);
+  }));
+  $('[data-edit-cancel]')?.addEventListener('click',()=>{
+    if(!metadataEditor)return;
+    metadataEditor.hidden=true;
+    lastEditButton?.focus();
+  });
   $('#lookup')?.addEventListener('click',lookupBarcode);
   let lastCheckedBarcode='';
   $('#barcode')?.addEventListener('blur',event=>{

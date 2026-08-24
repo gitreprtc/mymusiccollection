@@ -8,6 +8,28 @@
 
 .detail-back { margin-bottom: 16px; }
 
+.editable-value { display: inline; }
+.edit-pencil {
+  margin-left: 7px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font-size: .72em;
+  line-height: 1;
+  vertical-align: middle;
+}
+.edit-pencil:hover { background: #f9dbe3; color: var(--accent-dark); }
+.detail-meta span { display: inline-flex; align-items: center; margin-right: 5px; }
+.detail-meta .edit-pencil { font-size: .9rem; }
+.editable-heading { display: flex; align-items: center; gap: 3px; }
+.editable-heading .edit-pencil { font-size: .8rem; }
+.metadata-editor { margin: 18px 0; }
+.metadata-editor[hidden] { display: none; }
+.metadata-editor .form-grid { gap: 0 14px; }
+.metadata-editor .track-inputs { margin-top: 17px; }
+.metadata-editor small { display: block; margin-top: 5px; font-size: .78rem; }
+
 .cover-upload {
   margin-top: 14px;
   padding: 14px;
