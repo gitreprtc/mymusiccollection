@@ -1,0 +1,54 @@
+.cover-crop-dialog {
+  width: min(94vw, 560px);
+  max-height: 94vh;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 70px #180b1260;
+}
+
+.cover-crop-dialog::backdrop { background: #1d1218b8; }
+
+.cover-crop-card { padding: clamp(16px, 4vw, 26px); }
+.cover-crop-card h2 { margin: 0 0 5px; }
+.cover-crop-card > p { margin: 0 0 14px; color: var(--muted); }
+
+.cover-crop-card canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: #171217;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cover-crop-card canvas:active { cursor: grabbing; }
+.cover-crop-card label { margin-top: 13px; }
+.cover-crop-card input[type="range"] { padding: 8px 0; }
+
+.cover-crop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.cover-crop-cancel {
+  width: 100%;
+  margin-top: 9px;
+  padding: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.cover-crop-cancel:hover { background: var(--wash); color: var(--ink); }
+
+@media (max-width: 480px) {
+  .cover-crop-actions { flex-direction: column-reverse; }
+  .cover-crop-actions button { width: 100%; }
+}
