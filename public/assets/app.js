@@ -106,6 +106,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     match.textContent=`${label}: ${detail}`;
     link.append(album,match); suggestions.append(link);
   };
+  const filterStateKey='mijnmuziek-collection-filters';
+  const saveCollectionFilters=()=>{
+    if(!search)return;
+    try{sessionStorage.setItem(filterStateKey,JSON.stringify({search:search.value,format:format?.value||'',compilation:compilation?.value||'',sort:sort?.value||'',withinAlbum:!!withinAlbum?.checked}));}catch(error){}
+  };
+  const restoreCollectionFilters=()=>{
+    if(!search)return;
+    try{const state=JSON.parse(sessionStorage.getItem(filterStateKey)||'null');if(!state||typeof state!=='object')return;search.value=typeof state.search==='string'?state.search:'';if(format&&typeof state.format==='string')format.value=state.format;if(compilation&&typeof state.compilation==='string')compilation.value=state.compilation;if(sort&&typeof state.sort==='string')sort.value=state.sort;if(withinAlbum&&typeof state.withinAlbum==='boolean')withinAlbum.checked=state.withinAlbum;}catch(error){}
+  };
   const applyCollectionFilter=()=>{
     if(!search && !format && !compilation && !sort) return;
     const query=(search?.value||'').trim().toLocaleLowerCase('nl-NL');
@@ -139,14 +148,17 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(count) count.textContent=`${visible} uitgave${visible===1?'':'s'}`;
     suggestions.hidden=!query || suggestionCount===0 || document.activeElement!==search;
   };
-  search?.addEventListener('input',applyCollectionFilter);
-  search?.addEventListener('search',applyCollectionFilter);
+  const updateCollection=()=>{saveCollectionFilters();applyCollectionFilter();};
+  restoreCollectionFilters();
+  search?.addEventListener('input',updateCollection);
+  search?.addEventListener('search',updateCollection);
   search?.addEventListener('focus',()=>{if(search.value.trim()&&suggestions.childElementCount)suggestions.hidden=false;});
   search?.addEventListener('keydown',event=>{if(event.key==='Escape')suggestions.hidden=true;});
   document.addEventListener('pointerdown',event=>{if(event.target!==search&&!suggestions.contains(event.target))suggestions.hidden=true;});
   document.addEventListener('focusin',event=>{if(event.target!==search&&!suggestions.contains(event.target))suggestions.hidden=true;});
-  format?.addEventListener('change',applyCollectionFilter);
-  compilation?.addEventListener('change',applyCollectionFilter);
-  sort?.addEventListener('change',applyCollectionFilter);
-  withinAlbum?.addEventListener('change',applyCollectionFilter);
+  format?.addEventListener('change',updateCollection);
+  compilation?.addEventListener('change',updateCollection);
+  sort?.addEventListener('change',updateCollection);
+  withinAlbum?.addEventListener('change',updateCollection);
+  applyCollectionFilter();
 });
