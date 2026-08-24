@@ -5,7 +5,10 @@
     const image = new Image();
     const imageUrl = URL.createObjectURL(file);
 
-    image.onerror = () => URL.revokeObjectURL(imageUrl);
+    image.onerror = () => {
+      URL.revokeObjectURL(imageUrl);
+      window.alert('Deze foto kan op dit apparaat niet worden geopend om bij te snijden. Kies bij voorkeur een JPG-foto.');
+    };
     image.onload = () => {
       const size = 800;
       let zoom = 1;
@@ -13,8 +16,11 @@
       let offsetY = 0;
       let pointer = null;
 
-      const dialog = document.createElement('dialog');
+      const dialog = document.createElement('div');
       dialog.className = 'cover-crop-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.tabIndex = -1;
       dialog.innerHTML = `
         <section class="cover-crop-card" aria-labelledby="cover-crop-title">
           <h2 id="cover-crop-title">Albumhoes bijsnijden</h2>
@@ -48,7 +54,7 @@
       };
       const close = () => {
         URL.revokeObjectURL(imageUrl);
-        dialog.close();
+        document.body.classList.remove('cover-crop-open');
         dialog.remove();
       };
 
@@ -96,13 +102,16 @@
         }, 'image/jpeg', 0.92);
       });
 
-      dialog.addEventListener('cancel', event => {
-        event.preventDefault();
-        close();
+      dialog.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          input.value = '';
+          close();
+        }
       });
       document.body.append(dialog);
+      document.body.classList.add('cover-crop-open');
       draw();
-      dialog.showModal();
+      dialog.focus();
     };
     image.src = imageUrl;
   }

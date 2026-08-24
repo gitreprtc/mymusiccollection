@@ -1,17 +1,28 @@
 .cover-crop-dialog {
-  width: min(94vw, 560px);
-  max-height: 94vh;
-  padding: 0;
-  border: 0;
-  border-radius: 18px;
-  background: var(--paper);
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  overflow-y: auto;
+  background: #1d1218d9;
   color: var(--ink);
-  box-shadow: 0 20px 70px #180b1260;
 }
 
-.cover-crop-dialog::backdrop { background: #1d1218b8; }
+.cover-crop-open { overflow: hidden; }
 
-.cover-crop-card { padding: clamp(16px, 4vw, 26px); }
+.cover-crop-card {
+  width: min(100%, 536px);
+  max-height: calc(100vh - 24px);
+  padding: clamp(16px, 4vw, 26px);
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: 0 20px 70px #180b1260;
+}
 .cover-crop-card h2 { margin: 0 0 5px; }
 .cover-crop-card > p { margin: 0 0 14px; color: var(--muted); }
 
