@@ -110,6 +110,9 @@
 }
 
 @media (max-width: 640px) {
-  .details-content { order: 1; }
-  .details-sidebar { order: 2; }
+  .details { display: flex; flex-direction: column; gap: 0; }
+  .details-sidebar { display: contents; }
+  .details-sidebar > :first-child { order: 1; }
+  .details-content { order: 2; margin-top: 22px; }
+  .details-sidebar > :not(:first-child) { order: 3; }
 }
