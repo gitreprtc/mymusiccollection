@@ -21,6 +21,21 @@
 .cover-online-search button { width: 100%; }
 .cover-online-search p { margin: 5px 2px 0; font-size: .82rem; }
 
+.cd-box-editor {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.cd-box-editor h2 { margin: 0 0 3px; font-size: 1.2rem; }
+.cd-box-editor > p { margin: 0 0 12px; font-size: .88rem; }
+.cd-box-editor label { margin-top: 0; }
+.cd-box-fields { display: flex; align-items: stretch; gap: 8px; }
+.cd-box-fields input { min-width: 0; }
+.cd-box-editor small { display: block; margin-top: 7px; font-size: .78rem; }
+
 .title-suggestion-fields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
