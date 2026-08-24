@@ -1,0 +1,45 @@
+.cover-empty {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cover-upload {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.cover-upload label { margin: 0 0 7px; }
+.cover-upload input { font-size: .86rem; }
+.cover-upload p { margin: 6px 0 12px; font-size: .84rem; }
+
+.title-suggestion-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.title-suggestion-fields small {
+  display: block;
+  color: #756e75;
+  font-size: .68rem;
+  letter-spacing: .06em;
+}
+
+.title-suggestion-fields strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: .9rem;
+}
+
+.title-suggestion-meta {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+}
