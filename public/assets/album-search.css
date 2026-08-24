@@ -17,15 +17,24 @@
 .cover-upload label { margin: 0 0 7px; }
 .cover-upload input { font-size: .86rem; }
 .cover-upload p { margin: 6px 0 12px; font-size: .84rem; }
-.record-management { display: grid; gap: 10px; margin-top: 12px; }
-.record-management .actions { margin-top: 0; }
-.record-management form button { width: 100%; text-align: left; }
+.detail-control-card {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.detail-control-card h2 { margin: 0 0 11px; font-size: 1.2rem; }
+.detail-control-list { display: grid; gap: 10px; }
+.detail-control-list .actions { margin-top: 0; }
+.detail-control-list form button { width: 100%; text-align: left; }
+.detail-control-card .compilation-control { margin: 0; }
 .cover-online-search { margin: 0; }
 .cover-online-search button { width: 100%; }
 .cover-online-search p { margin: 5px 2px 0; font-size: .82rem; }
 
 .cd-box-editor {
-  margin-top: 18px;
+  margin-top: 14px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
