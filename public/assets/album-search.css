@@ -17,7 +17,10 @@
 .cover-upload label { margin: 0 0 7px; }
 .cover-upload input { font-size: .86rem; }
 .cover-upload p { margin: 6px 0 12px; font-size: .84rem; }
-.cover-online-search { margin-top: 10px; }
+.record-management { display: grid; gap: 10px; margin-top: 12px; }
+.record-management .actions { margin-top: 0; }
+.record-management form button { width: 100%; text-align: left; }
+.cover-online-search { margin: 0; }
 .cover-online-search button { width: 100%; }
 .cover-online-search p { margin: 5px 2px 0; font-size: .82rem; }
 
