@@ -24,9 +24,30 @@
   gap: 10px;
 }
 
+.title-suggestion-panel {
+  max-height: min(70vh, 520px);
+  overflow-y: auto !important;
+}
+
+.title-suggestion-panel button {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  padding: 10px 12px !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+}
+
+.title-suggestion-panel button:hover { background: #fff5f7 !important; }
+
 .title-suggestion-fields small {
   display: block;
-  color: #756e75;
+  color: #756e75 !important;
   font-size: .68rem;
   letter-spacing: .06em;
 }
@@ -34,12 +55,18 @@
 .title-suggestion-fields strong {
   display: block;
   overflow-wrap: anywhere;
-  color: var(--ink);
+  color: var(--ink) !important;
   font-size: .9rem;
+  line-height: 1.35;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .title-suggestion-meta {
   display: block;
   margin-top: 5px;
-  color: var(--muted);
+  color: var(--muted) !important;
+  line-height: 1.35;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
