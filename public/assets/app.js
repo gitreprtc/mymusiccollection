@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const parent=titleField.parentElement,status=document.createElement('small'),form=titleField.closest('form'),selectedSource=document.createElement('input'),selectedId=document.createElement('input');selectedSource.type=selectedId.type='hidden';selectedSource.name='suggestion_source';selectedId.name='suggestion_id';form?.append(selectedSource,selectedId);parent.style.position='relative';parent.append(panel,status);Object.assign(status.style,{position:'absolute',right:'12px',top:'50%',transform:'translateY(4px)',color:'#6d6870',pointerEvents:'none'});let searchTimer,lastQuery='',searchController;
     titleField.addEventListener('input',()=>{clearTimeout(searchTimer);searchController?.abort();const query=titleField.value.trim();if(query.length<2){panel.hidden=true;status.textContent='';return;}status.textContent='⌛ Zoeken…';searchTimer=setTimeout(async()=>{lastQuery=query;searchController=new AbortController();try{const response=await fetch('?action=title-suggestions&q='+encodeURIComponent(query),{signal:searchController.signal});const data=await response.json();if(query!==lastQuery||titleField.value.trim()!==query)return;panel.replaceChildren();for(const item of data.results||[]){const button=document.createElement('button');button.type='button';button.style.cssText='display:block;width:100%;padding:9px 12px;border:0;border-top:1px solid #eee8ec;background:#fff;text-align:left;cursor:pointer';const fields=document.createElement('div');fields.className='title-suggestion-fields';for(const [label,value] of [['ARTIEST',item.artist],['TITEL',item.title]]){const field=document.createElement('span'),heading=document.createElement('small'),text=document.createElement('strong');heading.textContent=label;text.textContent=value||'Onbekend';field.append(heading,text);fields.append(field);}const meta=document.createElement('small');meta.className='title-suggestion-meta';meta.textContent=`${item.source}${item.info?` · ${item.info}`:''} · ${item.format}`;button.append(fields,meta);button.addEventListener('click',async()=>{button.disabled=true;meta.textContent='Volledige albumgegevens ophalen…';try{selectedSource.value=item.source;selectedId.value=item.id;const detail=await fetch('?action=title-suggestion-detail&source='+encodeURIComponent(item.source)+'&id='+encodeURIComponent(item.id));const payload=await detail.json();if(!detail.ok||!payload.release)throw new Error(payload.error||'Albumgegevens niet gevonden.');const release=payload.release;titleField.value=release.title||item.title;$('#artist').value=release.artist||item.artist;if(release.barcode&&$('#barcode'))$('#barcode').value=release.barcode;if(release.year&&$('#release_year'))$('#release_year').value=release.year;if(release.format&&$('#format'))$('#format').value=release.format;if(release.tracklist&&$('#tracklist'))$('#tracklist').value=release.tracklist;if(release.track_artists&&$('#track_artists'))$('#track_artists').value=release.track_artists;if($('#is_compilation'))$('#is_compilation').checked=!!release.is_compilation;panel.hidden=true;status.textContent='';}catch(error){meta.textContent=error.message||'Ophalen mislukt.';button.disabled=false;}});panel.append(button);}panel.hidden=panel.childElementCount===0;status.textContent=panel.hidden?'Geen resultaten':`${panel.childElementCount} gevonden`;}catch(error){if(error.name!=='AbortError'){panel.hidden=true;status.textContent='Zoeken mislukt';}}},350);});
   }
-  const search=$('#filter'), format=$('#format-filter'), compilation=$('#compilation-filter'), sort=$('#sort-filter'), withinAlbum=$('#search-within-album'), count=$('#collection-count');
+  const search=$('#filter'), format=$('#format-filter'), compilation=$('#compilation-filter'), sort=$('#sort-filter'), withinAlbum=$('#search-within-album'), clearFilters=$('#clear-filters'), count=$('#collection-count');
   const suggestions=document.createElement('div');
   suggestions.id='search-suggestions';
   suggestions.hidden=true;
@@ -175,5 +175,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   compilation?.addEventListener('change',updateCollection);
   sort?.addEventListener('change',updateCollection);
   withinAlbum?.addEventListener('change',updateCollection);
+  clearFilters?.addEventListener('click',()=>{
+    if(search) search.value='';
+    if(format) format.value='';
+    if(compilation) compilation.value='';
+    if(sort) sort.value='';
+    if(withinAlbum) withinAlbum.checked=true;
+    try{sessionStorage.removeItem(filterStateKey);}catch(error){}
+    suggestions.hidden=true;
+    applyCollectionFilter();
+  });
   applyCollectionFilter();
 });
