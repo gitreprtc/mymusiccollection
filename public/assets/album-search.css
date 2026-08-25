@@ -53,7 +53,7 @@
 .cd-box-editor > p { margin: 0 0 12px; font-size: .88rem; }
 .cd-box-editor label { margin-top: 0; }
 .cd-box-fields { display: flex; align-items: stretch; gap: 8px; }
-.cd-box-fields input { min-width: 0; }
+.cd-box-fields input,.cd-box-fields select { min-width: 0; }
 .cd-box-editor small { display: block; margin-top: 7px; font-size: .78rem; }
 
 .title-suggestion-fields {
