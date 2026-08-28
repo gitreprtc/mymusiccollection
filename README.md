@@ -45,7 +45,9 @@ De pagina **Updates** in de app haalt na een klik via HTTPS de `main`-versie van
 
 ## Krachtige barcodeherkenning
 
-De scanpagina maakt een foto met de achtercamera en slaat die beveiligd op voordat de cijfers onder de barcode server-side worden herkend. Configureer de sleutel na inloggen via **Integraties → OpenAI Vision**. De sleutel wordt buiten de webmap opgeslagen, staat niet in GitHub en wordt niet naar de browser gestuurd. Een beheerder kan in plaats daarvan ook de omgevingsvariabele `OPENAI_API_KEY` instellen. Optioneel kun je `OPENAI_VISION_MODEL` instellen; standaard wordt `gpt-5-nano` gebruikt. Alleen de geoptimaliseerde barcodefoto wordt naar de vision-API gestuurd; de teruggegeven cijferreeks wordt lokaal op het barcodecontrolecijfer gevalideerd. Bij toevoegen wordt de opgeslagen barcodefoto aan de uitgave gekoppeld.
+De scanpagina leest EAN-, UPC- en GTIN-barcodes continu met de achtercamera. Een code wordt pas gebruikt na twee overeenkomende lezingen en een geldig controlecijfer. Op geschikte telefoons is ook de cameralamp beschikbaar. Als automatisch lezen niet lukt, kan de gebruiker een gerichte barcodefoto laten controleren of de cijfers handmatig invoeren.
+
+Voor de optionele fotoherkenning configureer je na inloggen een sleutel via **Integraties → OpenAI Vision**. De sleutel wordt buiten de webmap opgeslagen, staat niet in GitHub en wordt niet naar de browser gestuurd. Een beheerder kan in plaats daarvan ook de omgevingsvariabele `OPENAI_API_KEY` instellen. Optioneel kun je `OPENAI_VISION_MODEL` instellen; standaard wordt `gpt-5-nano` gebruikt. Alleen de gecropte barcodefoto wordt naar de vision-API gestuurd; het resultaat wordt opnieuw op lengte en controlecijfer gevalideerd. Mislukte scans en winkelchecks worden direct verwijderd; bij toevoegen kan de geslaagde scan aan de uitgave worden gekoppeld.
 
 Wanneer een scan niet in de collectie voorkomt, vraagt de app eerst om bevestiging. Na bevestiging worden gegevens via MusicBrainz opgehaald en wordt de uitgave direct aan de collectie toegevoegd.
 
