@@ -1,0 +1,59 @@
+{
+  "releases": [
+    {
+      "version": "1.0.10",
+      "released": "2026-09-04",
+      "notes": [
+        "Artiest en titel beginnen bovenaan naast het LP- of CD-label en staan op gelijke hoogte.",
+        "Het software-update scherm toont de bijbehorende GitHub-releasecommit.",
+        "Release notes van de huidige en eerdere versies blijven terug te lezen."
+      ]
+    },
+    {
+      "version": "1.0.9",
+      "released": "2026-08-28",
+      "notes": [
+        "De barcodescanner en scanbediening zijn grondig verbeterd.",
+        "Album zoeken, navigatie en de algemene app-interface zijn verfijnd.",
+        "Een nieuw app-icoon is toegevoegd."
+      ]
+    },
+    {
+      "version": "1.0.7",
+      "released": "2026-08-25",
+      "notes": [
+        "De collectie- en metadataweergave is compacter en beter uitgelijnd.",
+        "De bediening voor boxkleuren en album zoeken is verbeterd."
+      ]
+    },
+    {
+      "version": "1.0.4",
+      "released": "2026-08-25",
+      "notes": [
+        "Zoeken en filteren binnen de collectie is verder verbeterd.",
+        "Metadata en albuminformatie worden duidelijker weergegeven."
+      ]
+    },
+    {
+      "version": "1.0.3",
+      "released": "2026-08-25",
+      "notes": [
+        "Ondersteuning voor CD-boxnummers en bijbehorende kleuren is toegevoegd."
+      ]
+    },
+    {
+      "version": "1.0.2",
+      "released": "2026-08-24",
+      "notes": [
+        "De albumzoekfunctie en weergave van zoeksuggesties zijn verbeterd."
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "released": "2026-08-24",
+      "notes": [
+        "Eerste stabiele 1.0-release van Mijn Muziekcollectie."
+      ]
+    }
+  ]
+}
