@@ -35,7 +35,7 @@ final class Updater
                 throw new RuntimeException('Er is geen nieuwere, geldige versie beschikbaar.');
             }
             self::backup($root, $storage);
-            foreach (['public', 'src', '.htaccess', 'README.md', 'version.json', 'releases.json'] as $item) {
+            foreach (['public', 'src', '.htaccess', 'README.md', 'version.json'] as $item) {
                 $from = $source . '/' . $item;
                 if (!file_exists($from)) continue;
                 self::copy($from, $root . '/' . $item);
@@ -62,7 +62,7 @@ final class Updater
         $dir = $storage . '/backups'; if (!is_dir($dir)) mkdir($dir, 0750, true);
         $zip = new ZipArchive(); $file = $dir . '/app-' . gmdate('Ymd-His') . '.zip';
         if ($zip->open($file, ZipArchive::CREATE) !== true) throw new RuntimeException('Back-up kon niet worden gemaakt.');
-        foreach (['public', 'src', '.htaccess', 'README.md', 'version.json', 'releases.json'] as $item) self::addToZip($zip, $root . '/' . $item, $item);
+        foreach (['public', 'src', '.htaccess', 'README.md', 'version.json'] as $item) self::addToZip($zip, $root . '/' . $item, $item);
         $zip->close();
     }
 
