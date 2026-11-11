@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.20",
+      "released": "2026-11-11",
+      "notes": [
+        "De scanner heeft een zichtbare debugmodus voor camera-, frame- en decoderdiagnose.",
+        "Decodefouten worden niet langer stil genegeerd.",
+        "De scannerstatus en videokwaliteit zijn op iPhone controleerbaar via debug=1."
+      ]
+    },
+    {
       "version": "1.0.19",
       "released": "2026-11-11",
       "notes": [

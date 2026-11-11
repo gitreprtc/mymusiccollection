@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const titleField=$('#title');
   const layoutStyle=document.createElement('style');
-  layoutStyle.textContent='.format-choice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.format-choice .field-label{font-weight:700;width:100%}.format-choice label{display:flex;align-items:center;gap:6px;margin:0}.format-choice input{width:auto}.barcode-entry{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.barcode-entry input{flex:1 1 220px}.barcode-entry button{flex:0 0 auto}.barcode-entry #scanner-reader,.barcode-entry #scan-status{flex-basis:100%}';
+  layoutStyle.textContent='.format-choice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.format-choice .field-label{font-weight:700;width:100%}.format-choice label{display:flex;align-items:center;gap:6px;margin:0}.format-choice input{width:auto}.barcode-entry{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.barcode-entry input{flex:1 1 220px}.barcode-entry button{flex:0 0 auto}.barcode-entry #scanner-reader,.barcode-entry #scan-status{flex-basis:100%}.scanner-debug{white-space:pre-wrap;text-align:left;overflow:auto;max-height:240px;margin:12px 0 0;padding:12px;border-radius:10px;background:#17151a;color:#c8f7d5;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}';
   document.head.append(layoutStyle);
   const formatChoices=[...document.querySelectorAll('input[name="format_filter"]')];
   const selectedFormats=()=>[...document.querySelectorAll('.format-choice input')].filter(input=>input.checked).map(input=>input.value).join(',')||'CD,LP';

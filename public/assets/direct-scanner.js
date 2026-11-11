@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let busy = false;
   let torchEnabled = false;
   let recentReads = [];
+  let decodeAttempts = 0;
+  let decodeFailures = 0;
+  let frameTimer = null;
+  let debugPanel = null;
+  let storedDebug = false;
+  try { storedDebug = localStorage.getItem('mijnmuziek-scanner-debug') === '1'; } catch (error) { /* Private browsing may deny storage access. */ }
+  const debugEnabled = new URLSearchParams(location.search).get('debug') === '1' || storedDebug;
+  if (debugEnabled) {
+    debugPanel = document.createElement('pre');
+    debugPanel.className = 'scanner-debug';
+    debugPanel.setAttribute('aria-live', 'polite');
+    reader.parentElement?.append(debugPanel);
+  }
 
   const digitsOnly = value => String(value || '').replace(/\D/g, '');
   const validBarcode = value => {
@@ -55,11 +68,29 @@ document.addEventListener('DOMContentLoaded', () => {
     status.dataset.state = state;
   };
 
+  const updateDebug = () => {
+    if (!debugPanel) return;
+    const video = reader.querySelector('video');
+    const track = video?.srcObject?.getVideoTracks?.()[0];
+    const settings = track?.getSettings?.() || {};
+    debugPanel.textContent = [
+      `camera: ${running ? 'actief' : 'uit'}`,
+      `video: ${video?.videoWidth || 0} × ${video?.videoHeight || 0}`,
+      `track: ${settings.width || 0} × ${settings.height || 0} · ${settings.frameRate || '?'} fps`,
+      `decoder: ${scanner ? 'Html5Qrcode / ZXing actief' : 'niet actief'}`,
+      'formats: EAN-13, EAN-8, UPC-A, UPC-E, CODE-128',
+      `decodepogingen: ${decodeAttempts}`,
+      `decodefouten: ${decodeFailures}`,
+      `laatste fout: ${debugPanel.dataset.lastError || 'geen'}`
+    ].join('\n');
+  };
+
   const stopScanner = async () => {
     if (!scanner) return;
     running = false;
     try { await scanner.stop(); } catch (error) { /* Camera may already be gone. */ }
     try { await scanner.clear(); } catch (error) { /* Nothing rendered. */ }
+    if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
     reader.hidden = true;
     if (captureButton) captureButton.hidden = true;
     if (torchButton) torchButton.hidden = true;
@@ -140,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.hidden = false;
     setStatus('Camera openen…');
     recentReads = [];
+    decodeAttempts = 0;
+    decodeFailures = 0;
     try {
       scanner = new Html5Qrcode('scanner-reader', {
         formatsToSupport: [
@@ -168,9 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         scanConfig,
         onDecoded,
-        () => {}
+        error => { decodeAttempts += 1; decodeFailures += 1; if (debugPanel) debugPanel.dataset.lastError = String(error).slice(0, 180); updateDebug(); }
       );
       running = true;
+      frameTimer = window.setInterval(updateDebug, 500);
+      updateDebug();
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
       exposeCameraControls();
