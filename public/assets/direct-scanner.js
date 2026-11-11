@@ -22,6 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const startButton = document.querySelector('#start-scan');
   if (!startButton) return;
+  let rescanButton = document.querySelector('#rescan-barcode');
+  if (!rescanButton) {
+    rescanButton = document.createElement('button');
+    rescanButton.id = 'rescan-barcode';
+    rescanButton.type = 'button';
+    rescanButton.className = 'secondary';
+    rescanButton.textContent = 'Opnieuw scannen';
+    rescanButton.hidden = true;
+    startButton.parentElement?.append(rescanButton);
+  }
 
   const reader = document.querySelector('#scanner-reader');
   const status = document.querySelector('#scan-status');
@@ -99,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
     torchEnabled = false;
     startButton.textContent = 'Open achtercamera';
     startButton.setAttribute('aria-pressed', 'false');
+  };
+
+  const prepareRescan = () => {
+    rescanButton.hidden = false;
+    rescanButton.disabled = false;
   };
 
   const finishBarcode = async (value, photo = '') => {
@@ -241,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scanner = null;
       reader.hidden = true;
       setStatus('De camera kon niet starten. Controleer cameratoestemming en HTTPS, of vul de barcode handmatig in.', 'error');
+      prepareRescan();
       manualInput?.focus();
     } finally {
       startButton.disabled = false;
@@ -317,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       setStatus(error.message || 'De cijfers konden niet betrouwbaar worden gelezen. Probeer opnieuw met meer licht.', 'error');
       if (captureButton) captureButton.disabled = false;
+      prepareRescan();
       busy = false;
     }
   };
@@ -345,6 +362,13 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   startButton.addEventListener('click', startScanner);
+  rescanButton.addEventListener('click', async () => {
+    rescanButton.disabled = true;
+    busy = false;
+    await stopScanner();
+    setStatus('Nieuwe scan starten…');
+    await startScanner();
+  });
   captureButton?.addEventListener('click', readPhoto);
   torchButton?.addEventListener('click', toggleTorch);
   manualButton?.addEventListener('click', submitManual);
