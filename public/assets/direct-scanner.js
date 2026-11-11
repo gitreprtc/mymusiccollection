@@ -264,6 +264,23 @@ document.addEventListener('DOMContentLoaded', () => {
     return canvas;
   };
 
+  const readPrintedDigitsLocally = async canvas => {
+    try {
+      const { createWorker } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js');
+      const worker = await createWorker('eng');
+      const image = canvas.toDataURL('image/jpeg', 0.95);
+      const result = await worker.recognize(image);
+      await worker.terminate();
+      const candidates = (result.data.text.match(/\d(?:[\s.-]?\d){7,13}/g) || [])
+        .map(value => digitsOnly(value))
+        .filter(value => [8, 12, 13, 14].includes(value.length) && validBarcode(value));
+      return candidates.sort((a, b) => b.length - a.length)[0] || '';
+    } catch (error) {
+      if (debugPanel) debugPanel.dataset.lastError = 'Lokale OCR: ' + String(error).slice(0, 140);
+      return '';
+    }
+  };
+
   const readPhoto = async (automatic = false) => {
     const canvas = barcodeSnapshot();
     if (!canvas || busy) {
@@ -271,6 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     busy = true;
+    setStatus(automatic ? 'De cijfers onder de barcode worden lokaal gelezen…' : 'Barcodecijfers lezen…');
+    const localBarcode = await readPrintedDigitsLocally(canvas);
+    if (localBarcode) {
+      busy = false;
+      await finishBarcode(localBarcode);
+      return;
+    }
     if (captureButton) captureButton.disabled = true;
     setStatus('Scherpe barcodefoto controleren…');
     const image = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.94));

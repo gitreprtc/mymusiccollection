@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.24",
+      "released": "2026-11-11",
+      "notes": [
+        "De app gebruikt nu ook lokale OCR voor de gedrukte cijfers onder een barcode.",
+        "De cijferfallback werkt ook zonder ingestelde Vision-integratie.",
+        "UPC-A 602475451082 wordt lokaal gevalideerd op lengte en controlecijfer."
+      ]
+    },
+    {
       "version": "1.0.23",
       "released": "2026-11-11",
       "notes": [
