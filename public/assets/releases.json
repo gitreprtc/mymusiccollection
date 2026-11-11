@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.27",
+      "released": "2026-11-11",
+      "notes": [
+        "De modelkeuze staat nu bovenaan Integraties en is direct zichtbaar.",
+        "De actuele Vision-modelkeuze wordt niet meer onder de andere instellingen verborgen."
+      ]
+    },
+    {
       "version": "1.0.26",
       "released": "2026-11-11",
       "notes": [
