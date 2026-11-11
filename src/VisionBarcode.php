@@ -48,7 +48,7 @@ final class VisionBarcode
     private static function valid(string $value): bool
     {
         $length = strlen($value); if (!in_array($length, [8, 12, 13, 14], true)) return false;
-        $sum = 0; for ($i = 0; $i < $length - 1; $i++) $sum += (int)$value[$i] * ((($length - 2 - $i) % 2 === 0) ? 3 : 1);
+        $sum = 0; $weight = 3; for ($i = $length - 2; $i >= 0; $i--) { $sum += (int)$value[$i] * $weight; $weight = $weight === 3 ? 1 : 3; }
         return (10 - ($sum % 10)) % 10 === (int)$value[$length - 1];
     }
 

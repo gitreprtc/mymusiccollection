@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let decodeAttempts = 0;
   let decodeFailures = 0;
   let frameTimer = null;
+  let ocrTimer = null;
   let debugPanel = null;
   let storedDebug = false;
   try { storedDebug = localStorage.getItem('mijnmuziek-scanner-debug') === '1'; } catch (error) { /* Private browsing may deny storage access. */ }
@@ -91,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { await scanner.stop(); } catch (error) { /* Camera may already be gone. */ }
     try { await scanner.clear(); } catch (error) { /* Nothing rendered. */ }
     if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+    if (ocrTimer) { clearTimeout(ocrTimer); ocrTimer = null; }
     reader.hidden = true;
     if (captureButton) captureButton.hidden = true;
     if (torchButton) torchButton.hidden = true;
@@ -220,6 +222,14 @@ document.addEventListener('DOMContentLoaded', () => {
       running = true;
       frameTimer = window.setInterval(updateDebug, 500);
       updateDebug();
+      ocrTimer = window.setTimeout(async () => {
+        if (!running || busy) return;
+        try {
+          const response = await fetch('?action=runtime', { cache: 'no-store', headers: { Accept: 'application/json' } });
+          const runtime = await response.json();
+          if (runtime.vision_configured && running && !busy) await readPhoto(true);
+        } catch (error) { /* OCR fallback is optional; local scanning continues. */ }
+      }, 7000);
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
       exposeCameraControls();
@@ -254,11 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return canvas;
   };
 
-  const readPhoto = async () => {
+  const readPhoto = async (automatic = false) => {
     const canvas = barcodeSnapshot();
     if (!canvas || busy) return;
     busy = true;
-    captureButton.disabled = true;
+    if (captureButton) captureButton.disabled = true;
     setStatus('Scherpe barcodefoto controleren…');
     const image = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.94));
     if (!image) {
@@ -270,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = new FormData();
     form.append('barcode_photo', image, 'barcode.jpg');
     form.append('csrf', csrf);
-    form.append('keep_photo', storeMode ? '0' : '1');
+    form.append('keep_photo', automatic || storeMode ? '0' : '1');
     try {
       const response = await fetch('?action=vision-barcode', { method: 'POST', body: form });
       const data = await response.json();
@@ -279,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await finishBarcode(data.barcode, data.scan_photo || '');
     } catch (error) {
       setStatus(error.message || 'De cijfers konden niet betrouwbaar worden gelezen. Probeer opnieuw met meer licht.', 'error');
-      captureButton.disabled = false;
+      if (captureButton) captureButton.disabled = false;
       busy = false;
     }
   };

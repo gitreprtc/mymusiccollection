@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.22",
+      "released": "2026-11-11",
+      "notes": [
+        "Na zeven seconden zonder streepjesherkenning probeert de app automatisch de gedrukte barcodecijfers te lezen.",
+        "De OCR-fallback gebruikt maximaal één videoframe en slaat dit niet op.",
+        "De UPC/EAN-controlecijferberekening is gelijkgetrokken voor alle ondersteunde lengtes."
+      ]
+    },
+    {
       "version": "1.0.21",
       "released": "2026-11-11",
       "notes": [
