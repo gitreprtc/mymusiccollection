@@ -117,8 +117,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     heroSearch.append(search);hero.append(heroSearch);
   }
   const boxFilter=document.createElement('select');
-  boxFilter.id='box-filter';boxFilter.setAttribute('aria-label','Filter op box');
+  boxFilter.id='box-filter';boxFilter.setAttribute('aria-label','Filter op boxnummer');
   boxFilter.innerHTML='<option value="">Alle boxen</option><option value="assigned">Met box</option><option value="empty">Zonder box</option>';
+  const boxNumbers=new Set();
+  document.querySelectorAll('.collection-list .cd-box-location strong').forEach(node=>{const match=node.textContent.match(/\b(\d+)\b/);if(match)boxNumbers.add(match[1]);});
+  [...boxNumbers].sort((a,b)=>Number(a)-Number(b)).forEach(number=>{const option=document.createElement('option');option.value='box-'+number;option.textContent='Box '+number;boxFilter.append(option);});
   document.querySelector('.filter-fields')?.append(boxFilter);
   document.querySelectorAll('.collection-list .record').forEach(record=>{
     const cover=record.querySelector('img.cover');
@@ -184,7 +187,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       const matchesType=!type || record.dataset.format===type;
       const matchesCompilation=!compilationValue || record.dataset.compilation===compilationValue;
       const hasBox=!!record.querySelector('.cd-box-location strong');
-      const matchesBox=!boxValue || (boxValue==='assigned'?hasBox:!hasBox);
+      const boxNumber=record.querySelector('.cd-box-location strong')?.textContent.match(/\b(\d+)\b/)?.[1]||'';
+      const matchesBox=!boxValue || (boxValue==='assigned'?hasBox:boxValue==='empty'?!hasBox:boxValue==='box-'+boxNumber);
       record.hidden=!(matchesText && matchesType && matchesCompilation && matchesBox);
       if(!record.hidden) visible++;
       if(!query || !matchesText || suggestionCount>=8) return;

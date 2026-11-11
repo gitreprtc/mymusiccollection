@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.43",
+      "released": "2026-11-11",
+      "notes": [
+        "Het boxfilter bevat nu automatisch afzonderlijke opties voor Box 1, Box 2 enzovoort.",
+        "De boxnummers worden opgebouwd uit de boxlocaties in de collectie."
+      ]
+    },
+    {
       "version": "1.0.42",
       "released": "2026-11-11",
       "notes": [
