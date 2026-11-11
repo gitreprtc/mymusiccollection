@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.33",
+      "released": "2026-11-11",
+      "notes": [
+        "Verzamelalbum wordt nu als VA direct onder CD of LP getoond.",
+        "De boxlocatie en kleur zijn op mobiel weer zichtbaar.",
+        "De driepuntindicator is verwijderd en de volledige albumkaart is klikbaar."
+      ]
+    },
+    {
       "version": "1.0.32",
       "released": "2026-11-11",
       "notes": [
