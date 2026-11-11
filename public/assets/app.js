@@ -110,6 +110,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   const search=$('#filter'), format=$('#format-filter'), compilation=$('#compilation-filter'), sort=$('#sort-filter'), withinAlbum=$('#search-within-album'), clearFilters=$('#clear-filters'), count=$('#collection-count');
   if(search) search.placeholder='Zoek artiest, titel, barcode of boxnummer';
+  const hero=document.querySelector('.hero');
+  if(hero&&search&&!hero.querySelector('.hero-search')){
+    const heroSearch=document.createElement('div');heroSearch.className='hero-search';
+    heroSearch.innerHTML='<span aria-hidden="true">⌕</span>';
+    heroSearch.append(search);hero.append(heroSearch);
+  }
   const boxFilter=document.createElement('select');
   boxFilter.id='box-filter';boxFilter.setAttribute('aria-label','Filter op box');
   boxFilter.innerHTML='<option value="">Alle boxen</option><option value="assigned">Met box</option><option value="empty">Zonder box</option>';

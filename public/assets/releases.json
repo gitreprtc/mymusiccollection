@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.42",
+      "released": "2026-11-11",
+      "notes": [
+        "De volledige collectie-layout volgt nu de nieuwe dark-header en hero-referentie.",
+        "De turntable-hero gebruikt een echte responsive fotografie-asset.",
+        "Zoeken staat in de hero en de collectiegrid gebruikt een rustige, responsieve kaartopmaak."
+      ]
+    },
+    {
       "version": "1.0.41",
       "released": "2026-11-11",
       "notes": [
