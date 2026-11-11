@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.32",
+      "released": "2026-11-11",
+      "notes": [
+        "De LP/albumvisual is verfijnd voor desktop en mobiel.",
+        "Mobiel heeft nu een echte Filters-knop met uitklapbaar filterpaneel.",
+        "Het filterpaneel sluit automatisch zodra een zoekopdracht wordt uitgevoerd."
+      ]
+    },
+    {
       "version": "1.0.31",
       "released": "2026-11-11",
       "notes": [
