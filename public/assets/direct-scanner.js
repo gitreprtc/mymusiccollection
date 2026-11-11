@@ -150,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ].filter(Boolean),
         useBarCodeDetectorIfSupported: true
       });
-      const cameraId = await selectRearCamera();
       const scanConfig = {
         fps: 20,
         disableFlip: true,
@@ -159,30 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
           height: Math.min(240, Math.floor(height * 0.58))
         })
       };
-      const exactCamera = {
-        deviceId: { exact: cameraId },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        advanced: [{ focusMode: 'continuous' }]
-      };
-      try {
-        if (!cameraId) throw new Error('Gebruik camera-keuze op basis van omgeving.');
-        await scanner.start(exactCamera, scanConfig, onDecoded, () => {});
-      } catch (firstError) {
-        try { await scanner.clear(); } catch (clearError) { /* Retry with a fresh scanner below. */ }
-        scanner = new Html5Qrcode('scanner-reader', {
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.ITF,
-            Html5QrcodeSupportedFormats.CODE_128
-          ].filter(Boolean),
-          useBarCodeDetectorIfSupported: true
-        });
-        await scanner.start({ facingMode: { ideal: 'environment' } }, scanConfig, onDecoded, () => {});
-      }
+      await scanner.start({ facingMode: 'environment' }, scanConfig, onDecoded, () => {});
       running = true;
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
