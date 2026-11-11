@@ -1,6 +1,13 @@
 {
   "releases": [
     {
+      "version": "1.0.41",
+      "released": "2026-11-11",
+      "notes": [
+        "Boxbadges gebruiken nu de ingestelde boxkleur en tekstkleur."
+      ]
+    },
+    {
       "version": "1.0.40",
       "released": "2026-11-11",
       "notes": [
