@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.36",
+      "released": "2026-11-11",
+      "notes": [
+        "VA blijft als paarse badge zichtbaar.",
+        "Artiest en albumnaam staan onder elkaar op desktop en mobiel.",
+        "De albumnaam wordt vetgedrukt weergegeven."
+      ]
+    },
+    {
       "version": "1.0.35",
       "released": "2026-11-11",
       "notes": [
