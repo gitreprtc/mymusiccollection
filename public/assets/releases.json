@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.39",
+      "released": "2026-11-11",
+      "notes": [
+        "Desktop toont albumkaarten nu in een responsive grid.",
+        "Mobiel gebruikt compacte horizontale kaarten met variabele hoogte.",
+        "Albumkaarten hebben nu een toegankelijk driepunt-menu en boxbadges."
+      ]
+    },
+    {
       "version": "1.0.38",
       "released": "2026-11-11",
       "notes": [

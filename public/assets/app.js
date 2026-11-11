@@ -119,6 +119,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     const compilationTag=record.querySelector('.tag-compilation');
     if(compilationTag&&formatTag){compilationTag.textContent='VA';formatTag.append(compilationTag);}
     const link=record.querySelector('a[href*="page=record"]');
+    if(!record.querySelector('.record-menu')){
+      const menu=document.createElement('button');
+      menu.type='button';menu.className='record-menu';menu.setAttribute('aria-label','Albumopties');menu.textContent='⋮';
+      menu.addEventListener('click',event=>{event.stopPropagation();if(link)location.href=link.href;});
+      record.append(menu);
+    }
     record.addEventListener('click',event=>{if(event.target.closest('a,button,input,select,textarea,label'))return;if(link)location.href=link.href;});
   });
   const filtersPanel=document.querySelector('.collection-filters');
