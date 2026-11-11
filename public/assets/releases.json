@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.26",
+      "released": "2026-11-11",
+      "notes": [
+        "GPT-5 nano is vervangen door een modern multimodaal standaardmodel.",
+        "Integraties haalt nu de beschikbare modellen van OpenAI op.",
+        "Het gekozen Vision-model kan afzonderlijk worden opgeslagen."
+      ]
+    },
+    {
       "version": "1.0.25",
       "released": "2026-11-11",
       "notes": [

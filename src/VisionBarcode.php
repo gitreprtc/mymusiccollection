@@ -4,8 +4,38 @@ declare(strict_types=1);
 final class VisionBarcode
 {
     private const KEY_FILE = __DIR__ . '/../storage/openai-api-key.txt';
+    private const MODEL_FILE = __DIR__ . '/../storage/openai-vision-model.txt';
+    private const DEFAULT_MODEL = 'gpt-5.6-sol';
 
     public static function configured(): bool { return self::key() !== ''; }
+    public static function model(): string
+    {
+        $environment=trim((string)getenv('OPENAI_VISION_MODEL'));
+        if($environment!=='')return $environment;
+        return is_file(self::MODEL_FILE)?trim((string)file_get_contents(self::MODEL_FILE)):self::DEFAULT_MODEL;
+    }
+
+    public static function saveModel(string $model): void
+    {
+        $model=trim($model);
+        if(!preg_match('/^[A-Za-z0-9._:-]{1,120}$/',$model)) throw new RuntimeException('Kies een geldig OpenAI-model.');
+        $directory=dirname(self::MODEL_FILE);
+        if(!is_dir($directory)&&!mkdir($directory,0750,true)&&!is_dir($directory)) throw new RuntimeException('De opslagmap voor integraties kon niet worden aangemaakt.');
+        if(file_put_contents(self::MODEL_FILE,$model."\n",LOCK_EX)===false) throw new RuntimeException('Het gekozen model kon niet worden opgeslagen.');
+        @chmod(self::MODEL_FILE,0600);
+    }
+
+    public static function availableModels(): array
+    {
+        $key=self::key(); if($key==='')return [];
+        $curl=curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($curl,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>15,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$key,'Accept: application/json']]);
+        $raw=curl_exec($curl);$status=(int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);curl_close($curl);
+        $data=is_string($raw)?json_decode($raw,true):null;
+        if($status!==200||!is_array($data))return [];
+        $models=[];foreach($data['data']??[] as $row){$id=trim((string)($row['id']??''));if($id!=='')$models[]=$id;}
+        sort($models,SORT_NATURAL|SORT_FLAG_CASE);return array_values(array_unique($models));
+    }
 
     public static function saveKey(string $key): void
     {
@@ -27,7 +57,7 @@ final class VisionBarcode
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file);
         if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) throw new RuntimeException('Gebruik een JPG, PNG of WebP-foto.');
         $image = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($file));
-        $model = getenv('OPENAI_VISION_MODEL') ?: 'gpt-5-nano';
+        $model = self::model();
         $body = ['model' => $model, 'input' => [['role' => 'user', 'content' => [
             ['type' => 'input_text', 'text' => 'Read the human-readable digits printed underneath the barcode. Ignore whether the black bars can be decoded: this is an OCR fallback. Include every digit, including UPC-A guard digits printed outside the bars (the far-left first digit and far-right final check digit). Return only one candidate containing digits, with no spaces or punctuation, and return NONE only when the printed digits are genuinely not visible. Do not require agreement with the bar pattern; the server validates the EAN/UPC/GTIN check digit afterwards.'],
             ['type' => 'input_image', 'image_url' => $image, 'detail' => 'high'],
