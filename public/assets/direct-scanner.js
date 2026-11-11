@@ -42,8 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const digits = digitsOnly(value);
     if (![8, 12, 13, 14].includes(digits.length)) return false;
     let sum = 0;
-    for (let index = 0; index < digits.length - 1; index += 1) {
-      sum += Number(digits[index]) * (((digits.length - 2 - index) % 2 === 0) ? 3 : 1);
+    let weight = 3;
+    for (let index = digits.length - 2; index >= 0; index -= 1) {
+      sum += Number(digits[index]) * weight;
+      weight = weight === 3 ? 1 : 3;
     }
     return (10 - (sum % 10)) % 10 === Number(digits.at(-1));
   };
@@ -139,23 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus('Camera openen…');
     recentReads = [];
     try {
-      scanner = new Html5Qrcode('scanner-reader', {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.ITF,
-          Html5QrcodeSupportedFormats.CODE_128
-        ].filter(Boolean),
-        useBarCodeDetectorIfSupported: true
-      });
+      scanner = new Html5Qrcode('scanner-reader', { useBarCodeDetectorIfSupported: true });
       const scanConfig = {
         fps: 20,
         disableFlip: true,
         qrbox: (width, height) => ({
-          width: Math.floor(width * 0.96),
-          height: Math.min(240, Math.floor(height * 0.58))
+          width: Math.floor(width * 0.98),
+          height: Math.floor(height * 0.92)
         })
       };
       await scanner.start({ facingMode: 'environment' }, scanConfig, onDecoded, () => {});

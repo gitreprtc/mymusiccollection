@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.18",
+      "released": "2026-11-11",
+      "notes": [
+        "De scanner analyseert nu vrijwel het volledige camerabeeld.",
+        "GTIN-14-barcodes worden nu correct gevalideerd en herkend."
+      ]
+    },
+    {
       "version": "1.0.17",
       "released": "2026-11-11",
       "notes": [
