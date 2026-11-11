@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.40",
+      "released": "2026-11-11",
+      "notes": [
+        "Desktop gebruikt nu de originele albumhoes in plaats van de 100px-thumbnail.",
+        "De collectiegrid en responsive kaartopmaak zijn verder afgestemd op de mockup."
+      ]
+    },
+    {
       "version": "1.0.39",
       "released": "2026-11-11",
       "notes": [

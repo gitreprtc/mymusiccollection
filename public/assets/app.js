@@ -115,6 +115,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   boxFilter.innerHTML='<option value="">Alle boxen</option><option value="assigned">Met box</option><option value="empty">Zonder box</option>';
   document.querySelector('.filter-fields')?.append(boxFilter);
   document.querySelectorAll('.collection-list .record').forEach(record=>{
+    const cover=record.querySelector('img.cover');
+    if(cover&&window.matchMedia('(min-width: 641px)').matches) cover.src=cover.src.replace('size=thumb','size=full');
     const formatTag=record.querySelector('.record-tags');
     const compilationTag=record.querySelector('.tag-compilation');
     if(compilationTag&&formatTag){compilationTag.textContent='VA';formatTag.append(compilationTag);}
