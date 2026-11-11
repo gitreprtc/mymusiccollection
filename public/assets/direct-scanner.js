@@ -141,7 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus('Camera openen…');
     recentReads = [];
     try {
-      scanner = new Html5Qrcode('scanner-reader', { useBarCodeDetectorIfSupported: true });
+      scanner = new Html5Qrcode('scanner-reader', {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128
+        ].filter(Boolean),
+        useBarCodeDetectorIfSupported: false,
+        verbose: false
+      });
       const scanConfig = {
         fps: 20,
         disableFlip: true,
@@ -150,7 +160,16 @@ document.addEventListener('DOMContentLoaded', () => {
           height: Math.floor(height * 0.92)
         })
       };
-      await scanner.start({ facingMode: 'environment' }, scanConfig, onDecoded, () => {});
+      await scanner.start(
+        {
+          facingMode: 'environment',
+          width: { min: 1280, ideal: 1920, max: 2560 },
+          height: { min: 720, ideal: 1080, max: 1440 }
+        },
+        scanConfig,
+        onDecoded,
+        () => {}
+      );
       running = true;
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
