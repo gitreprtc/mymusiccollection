@@ -72,6 +72,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const titleField=$('#title');
+  const formatChoices=[...document.querySelectorAll('input[name="format_filter"]')];
+  const selectedFormats=()=>[...document.querySelectorAll('.format-choice input')].filter(input=>input.checked).map(input=>input.value).join(',')||'CD,LP';
+  const fetchWithFormatFilter=window.fetch;
+  window.fetch=(input,...args)=>{const url=String(input);if((url.includes('action=title-suggestions')||url.includes('action=lookup'))&&!url.includes('formats='))input=url+'&formats='+encodeURIComponent(selectedFormats());return fetchWithFormatFilter(input,...args);};
+  formatChoices.forEach(input=>input.addEventListener('change',()=>{if($('#format'))$('#format').value=input.value;}));
+  const formatSelect=$('#format');
+  if(formatSelect&&!formatChoices.length){
+    const choice=document.createElement('div');
+    choice.className='format-choice span-2';
+    choice.innerHTML='<span class="field-label">Type uitgave</span><label><input type="checkbox" value="CD" checked> CD</label><label><input type="checkbox" value="LP" checked> LP</label><p class="muted">Kies één of beide typen. Zoekresultaten worden hierop beperkt.</p>';
+    formatSelect.closest('div')?.before(choice);
+    choice.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{formatSelect.value=input.value;}));
+    formatSelect.closest('div').hidden=true;
+  }
   if(titleField){
     const panel=document.createElement('div');
     Object.assign(panel.style,{position:'absolute',zIndex:'6',top:'100%',left:'0',right:'0',background:'#fff',border:'1px solid #ded8dd',borderRadius:'10px',boxShadow:'0 10px 24px rgba(30,20,28,.12)',overflow:'hidden'});panel.hidden=true;panel.className='title-suggestion-panel';
