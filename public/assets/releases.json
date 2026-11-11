@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.38",
+      "released": "2026-11-11",
+      "notes": [
+        "De LP-afbeelding staat nu als voorgrondlaag in de hero.",
+        "De albumhoes en plaat blijven zichtbaar boven de achtergrondkleur op desktop en mobiel."
+      ]
+    },
+    {
       "version": "1.0.37",
       "released": "2026-11-11",
       "notes": [
