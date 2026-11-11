@@ -17,7 +17,7 @@ final class Updater
         $archive = $storage . '/update-' . $token . '.zip';
         $stage = $storage . '/update-' . $token;
         try {
-            self::download(self::ARCHIVE, $archive);
+            self::download(self::ARCHIVE . '?fresh=' . rawurlencode((string)microtime(true)), $archive);
             mkdir($stage, 0700, true);
             $zip = new ZipArchive();
             if ($zip->open($archive) !== true) throw new RuntimeException('GitHub leverde geen geldig updatearchief.');

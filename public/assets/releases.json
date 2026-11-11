@@ -1,6 +1,44 @@
 {
   "releases": [
     {
+      "version": "1.0.17",
+      "released": "2026-11-11",
+      "notes": [
+        "De updatecontrole omzeilt GitHub-cache en vindt nieuwe versies direct.",
+        "Release notes worden samen met de updateversie actueel opgehaald.",
+        "De update-installatie gebruikt altijd het nieuwste GitHub-archief."
+      ]
+    },
+    {
+      "version": "1.0.16",
+      "released": "2026-11-11",
+      "notes": [
+        "De iOS-barcodecamera gebruikt een compatibele environment-camera-instelling.",
+        "Problemen waarbij de camera op de achtergrond bleef draaien zijn opgelost."
+      ]
+    },
+    {
+      "version": "1.0.15",
+      "released": "2026-11-11",
+      "notes": [
+        "De GitHub-updatecontrole is cachevrij gemaakt."
+      ]
+    },
+    {
+      "version": "1.0.14",
+      "released": "2026-11-11",
+      "notes": [
+        "De camera-start en foutopruiming van de barcodescanner zijn verbeterd."
+      ]
+    },
+    {
+      "version": "1.0.13",
+      "released": "2026-11-11",
+      "notes": [
+        "De barcodescanner herkent meer barcodeformaten en scant sneller."
+      ]
+    },
+    {
       "version": "1.0.11",
       "released": "2026-09-04",
       "notes": [
