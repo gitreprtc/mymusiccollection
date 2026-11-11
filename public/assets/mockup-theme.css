@@ -15,6 +15,7 @@ nav{gap:7px}nav a{padding:10px 14px;color:#4c4851;border-radius:999px;font-size:
 .card{border-radius:20px;box-shadow:0 5px 20px rgba(45,22,32,.06)}
 .collection-list .record{cursor:pointer}.collection-list .record:after{display:none!important}
 .collection-list .record-identity{display:block}.collection-list .record-identity p{display:block}.collection-list .record-identity p+p{border-left:0;padding-left:0;margin-top:3px;font-weight:800}.collection-list .record-tags .tag-compilation{display:block;width:max-content;margin-top:4px;background:var(--lavender);color:#6332c4}
+@media(min-width:641px){.collection-list .record-identity{display:flex;align-items:center;gap:34px}.collection-list .record-identity p{display:block;flex:1}.collection-list .record-identity p+p{border-left:1px solid #e2dce1;padding-left:34px;margin-top:0}}
 .cd-box-location-empty{visibility:hidden}
 @media(max-width:640px){.collection-list .cd-box-location{display:flex;align-items:flex-end;flex:0 0 auto;padding:9px 8px;border-left:0}.collection-list .cd-box-location span{display:none}.collection-list .cd-box-location strong{font-size:.7rem}.collection-list .cd-box-location b{font-size:1.05rem}}
 @media(max-width:640px){.collection-list .record-identity p{display:block;font-size:.84rem}.collection-list .record-identity p+p{margin-left:0;margin-top:2px}.collection-list .record-identity span{display:block;font-size:.58rem;line-height:1.1;letter-spacing:.08em}}

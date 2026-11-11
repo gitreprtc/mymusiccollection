@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.37",
+      "released": "2026-11-11",
+      "notes": [
+        "Op desktop staan artiest en albumnaam weer naast elkaar.",
+        "Alleen op mobiel staan ze onder elkaar."
+      ]
+    },
+    {
       "version": "1.0.36",
       "released": "2026-11-11",
       "notes": [
