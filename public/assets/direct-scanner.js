@@ -1,4 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const barcodeField = document.querySelector('#barcode');
+  if (barcodeField && !document.querySelector('#start-scan')) {
+    const wrapper = barcodeField.closest('div');
+    const button = document.createElement('button');
+    button.id = 'start-scan';
+    button.type = 'button';
+    button.className = 'secondary';
+    button.textContent = 'Scan barcode';
+    barcodeField.parentElement.classList.add('barcode-entry');
+    barcodeField.parentElement.append(button);
+    const reader = document.createElement('div');
+    reader.id = 'scanner-reader';
+    reader.className = 'scanner-reader';
+    reader.hidden = true;
+    wrapper?.append(reader);
+    const status = document.createElement('p');
+    status.id = 'scan-status';
+    status.className = 'muted scan-hint';
+    status.textContent = 'Gebruik de knop om de barcode met de camera te lezen.';
+    wrapper?.append(status);
+  }
   const startButton = document.querySelector('#start-scan');
   if (!startButton) return;
 
@@ -38,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try { await scanner.stop(); } catch (error) { /* Camera may already be gone. */ }
     try { await scanner.clear(); } catch (error) { /* Nothing rendered. */ }
     reader.hidden = true;
-    captureButton.hidden = true;
-    torchButton.hidden = true;
+    if (captureButton) captureButton.hidden = true;
+    if (torchButton) torchButton.hidden = true;
     torchEnabled = false;
     startButton.textContent = 'Open achtercamera';
     startButton.setAttribute('aria-pressed', 'false');
@@ -50,7 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
     busy = true;
     const barcode = digitsOnly(value);
     await stopScanner();
-    setStatus(`Barcode ${barcode} betrouwbaar gelezen.`, 'success');
+    if (barcodeField) {
+      barcodeField.value = barcode;
+      barcodeField.dispatchEvent(new Event('change', { bubbles: true }));
+      setStatus('Barcode ' + barcode + ' betrouwbaar gelezen. Gegevens ophalen...', 'success');
+      if (typeof lookupBarcode === 'function') lookupBarcode();
+      busy = false;
+      return;
+    }
+    setStatus('Barcode ' + barcode + ' betrouwbaar gelezen.', 'success');
     if (new URLSearchParams(location.search).get('return') === 'add') {
       sessionStorage.setItem('barcode-for-add', JSON.stringify({ barcode, photo }));
       location.href = '?page=add';
@@ -69,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recentReads.push({ barcode, time: now });
     const confirmations = recentReads.filter(read => read.barcode === barcode).length;
     setStatus(confirmations > 1 ? 'Barcode bevestigd, resultaat verwerken…' : 'Barcode gevonden, nog één keer bevestigen…');
-    if (confirmations >= 2) finishBarcode(barcode);
+    if (confirmations >= 1) finishBarcode(barcode);
   };
 
   const selectRearCamera = async () => {
@@ -81,13 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const exposeCameraControls = () => {
-    captureButton.disabled = false;
-    captureButton.hidden = false;
+    if (captureButton) {
+      captureButton.disabled = false;
+      captureButton.hidden = false;
+    }
     try {
       const capabilities = scanner.getRunningTrackCapabilities();
-      torchButton.hidden = !capabilities?.torch;
+      if (torchButton) torchButton.hidden = !capabilities?.torch;
     } catch (error) {
-      torchButton.hidden = true;
+      if (torchButton) torchButton.hidden = true;
     }
   };
 
@@ -99,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!navigator.mediaDevices?.getUserMedia || !window.Html5Qrcode) {
       setStatus('Camera-scanning wordt niet ondersteund. Vul de barcode hieronder handmatig in.', 'error');
-      manualInput.focus();
+      manualInput?.focus();
       return;
     }
     startButton.disabled = true;
@@ -112,8 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
           Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF,
           Html5QrcodeSupportedFormats.CODE_128
-        ],
+        ].filter(Boolean),
         useBarCodeDetectorIfSupported: true
       });
       const cameraId = await selectRearCamera();
@@ -125,11 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
           advanced: [{ focusMode: 'continuous' }]
         },
         {
-          fps: 12,
+          fps: 20,
           disableFlip: true,
           qrbox: (width, height) => ({
-            width: Math.floor(width * 0.9),
-            height: Math.min(180, Math.floor(height * 0.42))
+            width: Math.floor(width * 0.96),
+            height: Math.min(240, Math.floor(height * 0.58))
           })
         },
         onDecoded,
@@ -144,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try { await scanner?.clear(); } catch (clearError) { /* Start did not render fully. */ }
       reader.hidden = true;
       setStatus('De camera kon niet starten. Controleer cameratoestemming en HTTPS, of vul de barcode handmatig in.', 'error');
-      manualInput.focus();
+      manualInput?.focus();
     } finally {
       startButton.disabled = false;
     }
@@ -221,10 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   startButton.addEventListener('click', startScanner);
-  captureButton.addEventListener('click', readPhoto);
-  torchButton.addEventListener('click', toggleTorch);
-  manualButton.addEventListener('click', submitManual);
-  manualInput.addEventListener('keydown', event => {
+  captureButton?.addEventListener('click', readPhoto);
+  torchButton?.addEventListener('click', toggleTorch);
+  manualButton?.addEventListener('click', submitManual);
+  manualInput?.addEventListener('keydown', event => {
     if (event.key === 'Enter') {
       event.preventDefault();
       submitManual();

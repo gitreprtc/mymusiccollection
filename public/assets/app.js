@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#read-cover')?.addEventListener('click',()=>readText('#cover','#artist','cover'));
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const titleField=$('#title');
+  const layoutStyle=document.createElement('style');
+  layoutStyle.textContent='.format-choice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.format-choice .field-label{font-weight:700;width:100%}.format-choice label{display:flex;align-items:center;gap:6px;margin:0}.format-choice input{width:auto}.barcode-entry{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.barcode-entry input{flex:1 1 220px}.barcode-entry button{flex:0 0 auto}.barcode-entry #scanner-reader,.barcode-entry #scan-status{flex-basis:100%}';
+  document.head.append(layoutStyle);
   const formatChoices=[...document.querySelectorAll('input[name="format_filter"]')];
   const selectedFormats=()=>[...document.querySelectorAll('.format-choice input')].filter(input=>input.checked).map(input=>input.value).join(',')||'CD,LP';
   const fetchWithFormatFilter=window.fetch;
@@ -85,6 +88,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     formatSelect.closest('div')?.before(choice);
     choice.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{formatSelect.value=input.value;}));
     formatSelect.closest('div').hidden=true;
+  }
+  if(formatSelect&&$('#artist')&&$('#barcode')){
+    const artistBlock=$('#artist').closest('div');
+    const barcodeBlock=$('#barcode').closest('div');
+    const formatBlock=document.querySelector('.format-choice');
+    artistBlock?.parentElement?.insertBefore(formatBlock,artistBlock);
+    artistBlock?.parentElement?.insertBefore(barcodeBlock,artistBlock);
   }
   if(titleField){
     const panel=document.createElement('div');
