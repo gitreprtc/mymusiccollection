@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.25",
+      "released": "2026-11-11",
+      "notes": [
+        "OpenAI Vision kan nu betrouwbaarder worden ingesteld in Integraties.",
+        "De opslagmap wordt automatisch aangemaakt als die ontbreekt.",
+        "Ontbrekende schrijfrechten geven nu een duidelijke foutmelding."
+      ]
+    },
+    {
       "version": "1.0.24",
       "released": "2026-11-11",
       "notes": [

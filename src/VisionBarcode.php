@@ -11,7 +11,10 @@ final class VisionBarcode
     {
         $key=trim($key);
         if(strlen($key)<20) throw new RuntimeException('Dit lijkt geen geldige OpenAI API-sleutel.');
-        if(file_put_contents(self::KEY_FILE,$key."\n",LOCK_EX)===false) throw new RuntimeException('De API-sleutel kon niet veilig worden opgeslagen.');
+        $directory=dirname(self::KEY_FILE);
+        if(!is_dir($directory)&&!mkdir($directory,0750,true)&&!is_dir($directory)) throw new RuntimeException('De opslagmap voor integraties kon niet worden aangemaakt.');
+        if(!is_writable($directory)) throw new RuntimeException('De opslagmap voor integraties is niet schrijfbaar voor PHP.');
+        if(file_put_contents(self::KEY_FILE,$key."\n",LOCK_EX)===false) throw new RuntimeException('De API-sleutel kon niet veilig worden opgeslagen. Controleer de schrijfrechten van storage.');
         @chmod(self::KEY_FILE,0600);
     }
 
