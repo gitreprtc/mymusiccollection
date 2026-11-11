@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.35",
+      "released": "2026-11-11",
+      "notes": [
+        "Zoeken ondersteunt nu expliciet boxnummers.",
+        "Zoeksuggesties tonen boxnummers met het label Boxnummer."
+      ]
+    },
+    {
       "version": "1.0.34",
       "released": "2026-11-11",
       "notes": [
