@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#read-back')?.addEventListener('click',()=>readText('#back','#tracklist','back'));
   const titleField=$('#title');
   const layoutStyle=document.createElement('style');
-  layoutStyle.textContent='.format-choice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.format-choice .field-label{font-weight:700;width:100%}.format-choice label{display:flex;align-items:center;gap:6px;margin:0}.format-choice input{width:auto}.barcode-entry{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.barcode-entry input{flex:1 1 220px}.barcode-entry button{flex:0 0 auto}.barcode-entry #scanner-reader,.barcode-entry #scan-status{flex-basis:100%}.scanner-debug{white-space:pre-wrap;text-align:left;overflow:auto;max-height:240px;margin:12px 0 0;padding:12px;border-radius:10px;background:#17151a;color:#c8f7d5;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}';
+  layoutStyle.textContent='.format-choice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.format-choice .field-label{font-weight:700;width:100%}.format-choice label{display:flex;align-items:center;gap:6px;margin:0}.format-choice input{width:auto}.barcode-entry{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.barcode-entry input{flex:1 1 220px}.barcode-entry button{flex:0 0 auto}.barcode-entry #scanner-reader,.barcode-entry #scan-status{flex-basis:100%}.scanner-debug{white-space:pre-wrap;text-align:left;overflow:auto;max-height:240px;margin:12px 0 0;padding:12px;border-radius:10px;background:#17151a;color:#c8f7d5;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}@media(max-width:640px){.album-form{grid-template-columns:repeat(2,minmax(0,1fr))}.album-form .span-2{grid-column:span 2}.album-form label{font-size:.84rem}.album-form input{padding-left:9px;padding-right:9px}}';
   document.head.append(layoutStyle);
   const formatChoices=[...document.querySelectorAll('input[name="format_filter"]')];
   const selectedFormats=()=>[...document.querySelectorAll('.format-choice input')].filter(input=>input.checked).map(input=>input.value).join(',')||'CD,LP';
@@ -93,6 +93,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     const artistBlock=$('#artist').closest('div');
     const barcodeBlock=$('#barcode').closest('div');
     const formatBlock=document.querySelector('.format-choice');
+    barcodeBlock?.classList.add('span-2');
+    $('#artist').closest('form')?.classList.add('album-form');
+    $('#artist').closest('div')?.classList.add('album-identity-field');
+    $('#title').closest('div')?.classList.add('album-identity-field');
+    $('#release_year').closest('div')?.classList.add('album-compact-field');
+    $('#duration_seconds').closest('div')?.classList.add('album-compact-field');
     artistBlock?.parentElement?.insertBefore(formatBlock,artistBlock);
     artistBlock?.parentElement?.insertBefore(barcodeBlock,artistBlock);
   }

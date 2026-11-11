@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.29",
+      "released": "2026-11-11",
+      "notes": [
+        "Artiest en titel staan op mobiel naast elkaar onder de scanner.",
+        "Jaar en lengte staan daaronder naast elkaar."
+      ]
+    },
+    {
       "version": "1.0.28",
       "released": "2026-11-11",
       "notes": [
