@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.31",
+      "released": "2026-11-11",
+      "notes": [
+        "Het dashboard heeft een nieuw responsive ontwerp voor desktop en mobiel.",
+        "Hero, navigatie, filters en collectiekaarten volgen nu één visueel systeem.",
+        "De bestaande collectie-, zoek- en filterfunctionaliteit blijft behouden."
+      ]
+    },
+    {
       "version": "1.0.30",
       "released": "2026-11-11",
       "notes": [
