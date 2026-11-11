@@ -62,7 +62,7 @@ final class VisionBarcode
             ['type' => 'input_text', 'text' => 'Read the human-readable digits printed underneath the barcode. Ignore whether the black bars can be decoded: this is an OCR fallback. Include every digit, including UPC-A guard digits printed outside the bars (the far-left first digit and far-right final check digit). Return only one candidate containing digits, with no spaces or punctuation, and return NONE only when the printed digits are genuinely not visible. Do not require agreement with the bar pattern; the server validates the EAN/UPC/GTIN check digit afterwards.'],
             ['type' => 'input_image', 'image_url' => $image, 'detail' => 'high'],
         ]]]];
-        if (str_starts_with($model, 'gpt-5')) $body['reasoning'] = ['effort' => 'minimal'];
+        if (str_starts_with($model, 'gpt-5')) $body['reasoning'] = ['effort' => 'none'];
         $curl = curl_init('https://api.openai.com/v1/responses');
         curl_setopt_array($curl, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode($body, JSON_THROW_ON_ERROR), CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $key, 'Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 45]);
         $response = curl_exec($curl); $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE); $curlError=curl_error($curl); curl_close($curl);

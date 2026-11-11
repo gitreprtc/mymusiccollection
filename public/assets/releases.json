@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "1.0.28",
+      "released": "2026-11-11",
+      "notes": [
+        "Vision gebruikt nu een geldige reasoning-instelling voor moderne GPT-5-modellen.",
+        "De foutmelding over reasoning.effort minimal is opgelost."
+      ]
+    },
+    {
       "version": "1.0.27",
       "released": "2026-11-11",
       "notes": [
