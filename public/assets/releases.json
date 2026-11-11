@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.21",
+      "released": "2026-11-11",
+      "notes": [
+        "De camera start nu zonder harde minimumresolutie die iPhone Safari kan weigeren.",
+        "Bij een mislukte camera-start wordt automatisch een compatibele fallback geprobeerd.",
+        "Elke mislukte startpoging wordt volledig opgeruimd zodat geen achtergrondstream blijft hangen."
+      ]
+    },
+    {
       "version": "1.0.20",
       "released": "2026-11-11",
       "notes": [

@@ -193,16 +193,30 @@ document.addEventListener('DOMContentLoaded', () => {
           height: Math.floor(height * 0.92)
         })
       };
-      await scanner.start(
-        {
-          facingMode: 'environment',
-          width: { min: 1280, ideal: 1920, max: 2560 },
-          height: { min: 720, ideal: 1080, max: 1440 }
-        },
-        scanConfig,
-        onDecoded,
-        error => { decodeAttempts += 1; decodeFailures += 1; if (debugPanel) debugPanel.dataset.lastError = String(error).slice(0, 180); updateDebug(); }
-      );
+      const onScanFailure = error => { decodeAttempts += 1; decodeFailures += 1; if (debugPanel) debugPanel.dataset.lastError = String(error).slice(0, 180); updateDebug(); };
+      try {
+        await scanner.start(
+          { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          scanConfig,
+          onDecoded,
+          onScanFailure
+        );
+      } catch (preferredCameraError) {
+        try { await scanner.stop(); } catch (stopError) { /* First attempt may not have fully started. */ }
+        try { await scanner.clear(); } catch (clearError) { /* Recreate the reader below. */ }
+        scanner = new Html5Qrcode('scanner-reader', {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128
+          ].filter(Boolean),
+          useBarCodeDetectorIfSupported: false,
+          verbose: false
+        });
+        await scanner.start({ facingMode: 'environment' }, scanConfig, onDecoded, onScanFailure);
+      }
       running = true;
       frameTimer = window.setInterval(updateDebug, 500);
       updateDebug();
