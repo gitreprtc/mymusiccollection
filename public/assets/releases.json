@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.34",
+      "released": "2026-11-11",
+      "notes": [
+        "Een filter op boxlocatie is toegevoegd: alle boxen, met box of zonder box.",
+        "Artiest en titel blijven op mobiel duidelijk leesbaar.",
+        "De header gebruikt nu een echte LP-afbeelding als hero-visual."
+      ]
+    },
+    {
       "version": "1.0.33",
       "released": "2026-11-11",
       "notes": [
