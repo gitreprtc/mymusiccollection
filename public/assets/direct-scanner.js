@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const runtime = await response.json();
           if (runtime.vision_configured && running && !busy) await readPhoto(true);
         } catch (error) { /* OCR fallback is optional; local scanning continues. */ }
-      }, 7000);
+      }, 1200);
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
       exposeCameraControls();
@@ -252,11 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!video?.videoWidth) return null;
     const sourceWidth = video.videoWidth;
     const sourceHeight = video.videoHeight;
-    const cropWidth = Math.floor(sourceWidth * 0.94);
-    const cropHeight = Math.floor(sourceHeight * 0.58);
-    const sourceX = Math.floor((sourceWidth - cropWidth) / 2);
-    const sourceY = Math.floor((sourceHeight - cropHeight) / 2);
-    const scale = Math.min(1, 1800 / cropWidth);
+    const cropWidth = sourceWidth;
+    const cropHeight = sourceHeight;
+    const sourceX = 0;
+    const sourceY = 0;
+    const scale = Math.min(1, 2400 / cropWidth);
     const canvas = document.createElement('canvas');
     canvas.width = Math.floor(cropWidth * scale);
     canvas.height = Math.floor(cropHeight * scale);
@@ -266,7 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const readPhoto = async (automatic = false) => {
     const canvas = barcodeSnapshot();
-    if (!canvas || busy) return;
+    if (!canvas || busy) {
+      if (automatic && !busy) ocrTimer = window.setTimeout(() => readPhoto(true), 500);
+      return;
+    }
     busy = true;
     if (captureButton) captureButton.disabled = true;
     setStatus('Scherpe barcodefoto controleren…');

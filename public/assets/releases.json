@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.23",
+      "released": "2026-11-11",
+      "notes": [
+        "OCR van de gedrukte barcodecijfers start direct zodra de camera een frame levert.",
+        "De volledige camerabeeld wordt gebruikt, zodat cijfers buiten de oude uitsnede ook worden gelezen.",
+        "Vision hoeft niet langer eerst het streeppatroon te bevestigen."
+      ]
+    },
+    {
       "version": "1.0.22",
       "released": "2026-11-11",
       "notes": [
