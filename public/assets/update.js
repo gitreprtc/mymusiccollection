@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(checkButton){checkButton.disabled=true;checkButton.textContent='Controleren…';}
     try{
       const details=historyPanel?'&details=1':'';
-      const response=await fetch(`?action=update-status${details}`,{cache:'no-store',headers:{Accept:'application/json'}});
+      const response=await fetch(`?action=update-status-fresh${details}`,{cache:'no-store',headers:{Accept:'application/json','Cache-Control':'no-cache'}});
       const data=await response.json();
       if(!response.ok) throw new Error(data.error||'Updatecontrole is niet beschikbaar.');
       if(data.available){
