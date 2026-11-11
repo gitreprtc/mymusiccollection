@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const stopScanner = async () => {
-    if (!scanner || !running) return;
+    if (!scanner) return;
     running = false;
     try { await scanner.stop(); } catch (error) { /* Camera may already be gone. */ }
     try { await scanner.clear(); } catch (error) { /* Nothing rendered. */ }
@@ -102,8 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const selectRearCamera = async () => {
-    const cameras = await Html5Qrcode.getCameras();
-    if (!cameras.length) throw new Error('Geen camera gevonden.');
+    let cameras = [];
+    try { cameras = await Html5Qrcode.getCameras(); } catch (error) { return null; }
+    if (!cameras.length) return null;
     const rearCameras = cameras.filter(camera => /back|rear|environment|achter/i.test(camera.label));
     const mainRear = rearCameras.find(camera => !/ultra|tele|macro|wide angle|groothoek/i.test(camera.label));
     return (mainRear || rearCameras[0] || cameras.at(-1)).id;
@@ -150,31 +151,48 @@ document.addEventListener('DOMContentLoaded', () => {
         useBarCodeDetectorIfSupported: true
       });
       const cameraId = await selectRearCamera();
-      await scanner.start(
-        {
-          deviceId: { exact: cameraId },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          advanced: [{ focusMode: 'continuous' }]
-        },
-        {
-          fps: 20,
-          disableFlip: true,
-          qrbox: (width, height) => ({
-            width: Math.floor(width * 0.96),
-            height: Math.min(240, Math.floor(height * 0.58))
-          })
-        },
-        onDecoded,
-        () => {}
-      );
+      const scanConfig = {
+        fps: 20,
+        disableFlip: true,
+        qrbox: (width, height) => ({
+          width: Math.floor(width * 0.96),
+          height: Math.min(240, Math.floor(height * 0.58))
+        })
+      };
+      const exactCamera = {
+        deviceId: { exact: cameraId },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        advanced: [{ focusMode: 'continuous' }]
+      };
+      try {
+        if (!cameraId) throw new Error('Gebruik camera-keuze op basis van omgeving.');
+        await scanner.start(exactCamera, scanConfig, onDecoded, () => {});
+      } catch (firstError) {
+        try { await scanner.clear(); } catch (clearError) { /* Retry with a fresh scanner below. */ }
+        scanner = new Html5Qrcode('scanner-reader', {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.CODE_128
+          ].filter(Boolean),
+          useBarCodeDetectorIfSupported: true
+        });
+        await scanner.start({ facingMode: { ideal: 'environment' } }, scanConfig, onDecoded, () => {});
+      }
       running = true;
       startButton.textContent = 'Camera sluiten';
       startButton.setAttribute('aria-pressed', 'true');
       exposeCameraControls();
       setStatus('Houd de hele barcode horizontaal binnen het kader. De scan gaat automatisch.', 'scanning');
     } catch (error) {
+      running = false;
+      try { await scanner?.stop(); } catch (stopError) { /* Camera may already be stopped. */ }
       try { await scanner?.clear(); } catch (clearError) { /* Start did not render fully. */ }
+      scanner = null;
       reader.hidden = true;
       setStatus('De camera kon niet starten. Controleer cameratoestemming en HTTPS, of vul de barcode handmatig in.', 'error');
       manualInput?.focus();
