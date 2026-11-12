@@ -36,7 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const reader = document.querySelector('#scanner-reader');
   const status = document.querySelector('#scan-status');
   const captureButton = document.querySelector('#capture-scan');
-  const torchButton = document.querySelector('#toggle-torch');
+  let torchButton = document.querySelector('#toggle-torch');
+  if (!torchButton) {
+    torchButton = document.createElement('button');
+    torchButton.id = 'toggle-torch';
+    torchButton.type = 'button';
+    torchButton.className = 'secondary';
+    torchButton.textContent = 'Lamp aan';
+    torchButton.hidden = true;
+    startButton.parentElement?.append(torchButton);
+  }
   const manualInput = document.querySelector('#manual-barcode');
   const manualButton = document.querySelector('#check-manual-barcode');
   const csrf = document.querySelector('#csrf-token')?.dataset.token || '';
