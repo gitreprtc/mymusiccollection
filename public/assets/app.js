@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(artistIndex>=0) { addSuggestion(record,'Uitvoerende artiest',`${artists[artistIndex]} — ${tracks[artistIndex]||'nummer'}`); suggestionCount++; }
       }
     });
-    if(count) count.textContent=`${visible} uitgave${visible===1?'':'s'}`;
+    if(count) count.textContent=`${visible} album${visible===1?'':'s'}`;
     suggestions.hidden=!query || suggestionCount===0 || document.activeElement!==search;
   };
   const updateCollection=()=>{saveCollectionFilters();applyCollectionFilter();};
