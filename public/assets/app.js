@@ -42,7 +42,9 @@ async function readText(source, target, mode) {
 document.addEventListener('DOMContentLoaded',()=>{
   const menuToggle=$('#menu-toggle'), menu=$('#site-nav');
   const settingsLink=menu?.querySelector('a[href*="page=box-colors"]');
-  if(settingsLink){settingsLink.textContent='Instellingen';settingsLink.href='?page=integrations';}
+  const integrationsLink=menu?.querySelector('a[href*="page=integrations"]');
+  if(settingsLink)settingsLink.remove();
+  if(integrationsLink){integrationsLink.textContent='Instellingen';integrationsLink.classList.toggle('active',location.search.includes('page=integrations')||location.search.includes('page=box-colors'));}
   menuToggle?.addEventListener('click',()=>{
     const open=menu?.classList.toggle('is-open')||false;
     menuToggle.setAttribute('aria-expanded',String(open));
