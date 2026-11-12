@@ -130,13 +130,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     const compilationTag=record.querySelector('.tag-compilation');
     if(compilationTag&&formatTag){compilationTag.textContent='VA';formatTag.append(compilationTag);}
     const link=record.querySelector('a[href*="page=record"]');
-    if(!record.querySelector('.record-menu')){
-      const menu=document.createElement('button');
-      menu.type='button';menu.className='record-menu';menu.setAttribute('aria-label','Albumopties');menu.textContent='⋮';
-      menu.addEventListener('click',event=>{event.stopPropagation();if(link)location.href=link.href;});
-      record.append(menu);
-    }
     record.addEventListener('click',event=>{if(event.target.closest('a,button,input,select,textarea,label'))return;if(link)location.href=link.href;});
+    link?.addEventListener('click',()=>{try{sessionStorage.setItem('mijnmuziek-collection-scroll',JSON.stringify({id:record.dataset.order,top:window.scrollY}));}catch(error){}});
   });
   const filtersPanel=document.querySelector('.collection-filters');
   if(filtersPanel&&search){
@@ -234,4 +229,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     applyCollectionFilter();
   });
   applyCollectionFilter();
+  try{
+    const saved=JSON.parse(sessionStorage.getItem('mijnmuziek-collection-scroll')||'null');
+    if(saved&&saved.id){sessionStorage.removeItem('mijnmuziek-collection-scroll');requestAnimationFrame(()=>{const target=document.querySelector(`.collection-list .record[data-order="${CSS.escape(String(saved.id))}"]`);if(target)target.scrollIntoView({block:'center'});else window.scrollTo(0,Number(saved.top)||0);});}
+  }catch(error){}
 });
