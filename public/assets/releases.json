@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "1.0.47",
+      "released": "2026-11-12",
+      "notes": [
+        "VA-labels zijn van de albumkaarten verwijderd, maar blijven beschikbaar in filters en op albumpagina’s.",
+        "Boxkleuren en accountinstellingen zijn samengebracht onder Instellingen.",
+        "Wachtwoorden kunnen nu vanuit Instellingen worden gewijzigd."
+      ]
+    },
+    {
       "version": "1.0.43",
       "released": "2026-11-11",
       "notes": [

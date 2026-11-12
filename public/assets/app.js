@@ -41,6 +41,8 @@ async function readText(source, target, mode) {
 }
 document.addEventListener('DOMContentLoaded',()=>{
   const menuToggle=$('#menu-toggle'), menu=$('#site-nav');
+  const settingsLink=menu?.querySelector('a[href*="page=box-colors"]');
+  if(settingsLink){settingsLink.textContent='Instellingen';settingsLink.href='?page=integrations';}
   menuToggle?.addEventListener('click',()=>{
     const open=menu?.classList.toggle('is-open')||false;
     menuToggle.setAttribute('aria-expanded',String(open));
@@ -128,7 +130,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(cover&&window.matchMedia('(min-width: 641px)').matches) cover.src=cover.src.replace('size=thumb','size=full');
     const formatTag=record.querySelector('.record-tags');
     const compilationTag=record.querySelector('.tag-compilation');
-    if(compilationTag&&formatTag){compilationTag.textContent='VA';formatTag.append(compilationTag);}
+    if(compilationTag)compilationTag.textContent='VA';
     const link=record.querySelector('a[href*="page=record"]');
     record.addEventListener('click',event=>{if(event.target.closest('a,button,input,select,textarea,label'))return;if(link)location.href=link.href;});
     link?.addEventListener('click',()=>{try{sessionStorage.setItem('mijnmuziek-collection-scroll',JSON.stringify({id:record.dataset.order,top:window.scrollY}));}catch(error){}});
